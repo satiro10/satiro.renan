@@ -1120,33 +1120,352 @@ Passo 3: Exames complementares"></textarea>
         </div>
     </div>
 
-    <div class="flashcard-mode" id="flashcardMode">
-        <div class="flashcard-container">
-            <div class="flashcard" id="flashcard">
-                <div class="flashcard-pages" id="flashcardPages">
-                    <div class="page-tab active" onclick="mudarPaginaFlashcard('geral', this)">📋 Geral</div>
-                    <div class="page-tab" onclick="mudarPaginaFlashcard('indicacoes', this)">💡 Indicações</div>
-                    <div class="page-tab" onclick="mudarPaginaFlashcard('impressos', this)">🖨️ Impressos</div>
-                    <div class="page-tab" onclick="mudarPaginaFlashcard('checklist', this)">✅ Checklist</div>
-                    <div class="page-tab" onclick="mudarPaginaFlashcard('resumo', this)">📝 Resumo</div>
-                </div>
+<!-- Substitua a seção FLASHCARD MODE e a função startFlashcard() por este código: -->
 
-                <div class="page-content" id="flashcardPageContent"></div>
+<div class="flashcard-mode" id="flashcardMode">
+    <div class="flashcard-container">
+        <div class="flashcard" id="flashcard">
+            <div class="flashcard-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; padding-bottom: 10px; border-bottom: 2px solid #e2e8f0;">
+                <h3 id="flashcardTitle" style="color: #2d3748; margin: 0;">Carregando...</h3>
+                <span id="flashcardCounter" style="background: #667eea; color: white; padding: 5px 12px; border-radius: 20px; font-weight: 600;">0/0</span>
+            </div>
+            
+            <div class="flashcard-pages" id="flashcardPages">
+                <div class="page-tab active" onclick="mudarPaginaFlashcard('geral', this)">📋 Geral</div>
+                <div class="page-tab" onclick="mudarPaginaFlashcard('indicacoes', this)">💡 Indicações</div>
+                <div class="page-tab" onclick="mudarPaginaFlashcard('impressos', this)">🖨️ Impressos</div>
+                <div class="page-tab" onclick="mudarPaginaFlashcard('checklist', this)">✅ Checklist</div>
+                <div class="page-tab" onclick="mudarPaginaFlashcard('resumo', this)">📝 Resumo</div>
             </div>
 
-            <div class="flashcard-controls">
-                <button class="flashcard-btn prev" onclick="prevCard()">⬅ Anterior</button>
-                <button class="flashcard-btn shuffle" onclick="shuffleCards()">🔄 Embaralhar</button>
-                <button class="flashcard-btn next" onclick="nextCard()">Próximo ➡</button>
-                <button class="flashcard-btn close" onclick="closeFlashcards()">✖ Fechar</button>
-            </div>
-            <div style="text-align: center; color: white; margin-top: 15px;">
-                <span id="flashcardCounter"></span>
-            </div>
+            <div class="page-content" id="flashcardPageContent"></div>
+        </div>
+
+        <div class="flashcard-controls">
+            <button class="flashcard-btn prev" onclick="prevCard()" title="Anterior (seta esquerda)">
+                <i class="fas fa-arrow-left"></i> Anterior
+            </button>
+            <button class="flashcard-btn shuffle" onclick="shuffleCards()" title="Embaralhar">
+                <i class="fas fa-random"></i> Embaralhar
+            </button>
+            <button class="flashcard-btn next" onclick="nextCard()" title="Próximo (seta direita)">
+                Próximo <i class="fas fa-arrow-right"></i>
+            </button>
+            <button class="flashcard-btn close" onclick="closeFlashcards()" title="Fechar (ESC)">
+                <i class="fas fa-times"></i> Fechar
+            </button>
+        </div>
+        
+        <!-- Barra de progresso dos flashcards -->
+        <div class="progress-bar" style="margin-top: 15px; background: rgba(255,255,255,0.2);">
+            <div class="progress-fill" id="flashcardProgress" style="width: 0%; height: 8px; background: linear-gradient(90deg, #52c41a, #1890ff);"></div>
+        </div>
+        
+        <!-- Informações adicionais -->
+        <div style="display: flex; justify-content: center; gap: 20px; margin-top: 10px; color: white; font-size: 0.9em;">
+            <span><i class="fas fa-keyboard"></i> Setas: ← →</span>
+            <span><i class="fas fa-keyboard"></i> 1-5: Tabs</span>
+            <span><i class="fas fa-keyboard"></i> ESC: Sair</span>
         </div>
     </div>
+</div>
 
-    <script>
+<script>
+// Substitua as funções relacionadas a flashcards por estas versões corrigidas:
+
+function startFlashcard(stationId) {
+    console.log("Iniciando flashcard com ID:", stationId); // Para debug
+    
+    if (stationId) {
+        // Modo: estudar uma estação específica
+        const estacao = stationsData.find(s => s.id === stationId);
+        if (estacao) {
+            flashcardDeck = [estacao];
+            console.log("Estação encontrada:", estacao.title);
+        } else {
+            alert('Estação não encontrada.');
+            return;
+        }
+    } else {
+        // Modo: estudar todas as estações filtradas
+        flashcardDeck = [...filteredStations];
+        
+        // Se não houver estações filtradas, usa todas
+        if (flashcardDeck.length === 0) {
+            flashcardDeck = [...stationsData];
+        }
+        
+        console.log("Iniciando estudo com", flashcardDeck.length, "estações");
+    }
+
+    if (flashcardDeck.length === 0) {
+        alert('Nenhuma estação disponível para estudo.');
+        return;
+    }
+
+    // Resetar para a primeira estação e primeira página
+    currentFlashcardIndex = 0;
+    currentFlashcardPage = 'geral';
+    
+    // Atualizar título
+    document.getElementById('flashcardTitle').textContent = flashcardDeck[0].title;
+    
+    // Mostrar o flashcard
+    showFlashcard();
+    
+    // Ativar o modo flashcard
+    document.getElementById('flashcardMode').classList.add('active');
+}
+
+function showFlashcard() {
+    if (flashcardDeck.length === 0) {
+        closeFlashcards();
+        return;
+    }
+
+    // Garantir que o índice está dentro dos limites
+    if (currentFlashcardIndex >= flashcardDeck.length) {
+        currentFlashcardIndex = 0;
+    }
+    if (currentFlashcardIndex < 0) {
+        currentFlashcardIndex = flashcardDeck.length - 1;
+    }
+
+    const station = flashcardDeck[currentFlashcardIndex];
+    
+    // Atualizar título
+    document.getElementById('flashcardTitle').textContent = station.title;
+    
+    // Atualizar contador
+    document.getElementById('flashcardCounter').innerHTML = 
+        `${currentFlashcardIndex + 1} / ${flashcardDeck.length}`;
+    
+    // Atualizar barra de progresso
+    const progresso = ((currentFlashcardIndex + 1) / flashcardDeck.length) * 100;
+    document.getElementById('flashcardProgress').style.width = progresso + '%';
+    
+    // Ativar a aba atual
+    ativarAbaAtual();
+    
+    // Mostrar o conteúdo da página atual
+    mostrarPaginaFlashcard(currentFlashcardPage);
+}
+
+function nextCard() {
+    if (flashcardDeck.length === 0) return;
+    
+    // Avançar para a próxima estação
+    if (currentFlashcardIndex < flashcardDeck.length - 1) {
+        currentFlashcardIndex++;
+    } else {
+        // Se chegou ao final, volta para o início (modo cíclico)
+        currentFlashcardIndex = 0;
+        // Opcional: mostrar mensagem
+        // toast("Última estação, voltando ao início");
+    }
+    
+    showFlashcard();
+}
+
+function prevCard() {
+    if (flashcardDeck.length === 0) return;
+    
+    // Voltar para a estação anterior
+    if (currentFlashcardIndex > 0) {
+        currentFlashcardIndex--;
+    } else {
+        // Se está na primeira, vai para a última (modo cíclico)
+        currentFlashcardIndex = flashcardDeck.length - 1;
+        // Opcional: mostrar mensagem
+        // toast("Primeira estação, indo para o final");
+    }
+    
+    showFlashcard();
+}
+
+function shuffleCards() {
+    if (flashcardDeck.length === 0) return;
+    
+    // Embaralhar o deck
+    for (let i = flashcardDeck.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [flashcardDeck[i], flashcardDeck[j]] = [flashcardDeck[j], flashcardDeck[i]];
+    }
+    
+    // Resetar para o primeiro índice
+    currentFlashcardIndex = 0;
+    
+    // Mostrar a primeira estação do deck embaralhado
+    showFlashcard();
+    
+    // Feedback visual (opcional)
+    console.log("Deck embaralhado!");
+}
+
+function closeFlashcards() {
+    document.getElementById('flashcardMode').classList.remove('active');
+}
+
+function ativarAbaAtual() {
+    const paginas = ['geral', 'indicacoes', 'impressos', 'checklist', 'resumo'];
+    const tabs = document.querySelectorAll('.page-tab');
+    
+    tabs.forEach((tab, index) => {
+        tab.classList.remove('active');
+        if (paginas[index] === currentFlashcardPage) {
+            tab.classList.add('active');
+        }
+    });
+}
+
+function mudarPaginaFlashcard(pagina, el) {
+    currentFlashcardPage = pagina;
+    ativarAbaAtual();
+    mostrarPaginaFlashcard(pagina);
+}
+
+// Melhorar o evento de teclado
+document.addEventListener('keydown', function(e) {
+    if (document.getElementById('flashcardMode').classList.contains('active')) {
+        // Prevenir comportamento padrão apenas quando necessário
+        if (e.key === 'ArrowRight' || e.key === 'ArrowLeft' || e.key === 'Escape' || 
+            (e.key >= '1' && e.key <= '5')) {
+            e.preventDefault();
+        }
+        
+        // Navegação entre estações
+        if (e.key === 'ArrowRight') {
+            nextCard();
+        } else if (e.key === 'ArrowLeft') {
+            prevCard();
+        } else if (e.key === 'Escape') {
+            closeFlashcards();
+        } 
+        // Navegação entre abas (1-5)
+        else if (e.key >= '1' && e.key <= '5') {
+            const pages = ['geral', 'indicacoes', 'impressos', 'checklist', 'resumo'];
+            const pageIndex = parseInt(e.key) - 1;
+            if (pageIndex >= 0 && pageIndex < pages.length) {
+                currentFlashcardPage = pages[pageIndex];
+                ativarAbaAtual();
+                mostrarPaginaFlashcard(currentFlashcardPage);
+            }
+        }
+        // Tecla 'H' para home/primeira estação
+        else if (e.key === 'h' || e.key === 'H') {
+            currentFlashcardIndex = 0;
+            showFlashcard();
+        }
+        // Tecla 'E' para end/última estação
+        else if (e.key === 'e' || e.key === 'E') {
+            currentFlashcardIndex = flashcardDeck.length - 1;
+            showFlashcard();
+        }
+    }
+});
+
+// Função opcional para mostrar mensagens toast
+function toast(mensagem) {
+    // Criar elemento toast se não existir
+    let toastEl = document.getElementById('toastMessage');
+    if (!toastEl) {
+        toastEl = document.createElement('div');
+        toastEl.id = 'toastMessage';
+        toastEl.style.cssText = `
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.8);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 30px;
+            font-size: 14px;
+            z-index: 10000;
+            transition: opacity 0.3s;
+            opacity: 0;
+        `;
+        document.body.appendChild(toastEl);
+    }
+    
+    // Mostrar mensagem
+    toastEl.textContent = mensagem;
+    toastEl.style.opacity = '1';
+    
+    // Esconder após 2 segundos
+    setTimeout(() => {
+        toastEl.style.opacity = '0';
+    }, 2000);
+}
+
+// Também vamos corrigir a função que chama o flashcard a partir do card
+// Encontre a função renderStations() e substitua a parte do botão flashcard:
+
+function renderStations() {
+    let filtered = [...stationsData];
+
+    if (currentSpecialty !== 'all') {
+        filtered = filtered.filter(s => s.specialty === currentSpecialty);
+    }
+
+    if (currentFilter === 'inep') {
+        filtered = filtered.filter(s => s.official);
+    } else if (currentFilter === 'medstuder') {
+        filtered = filtered.filter(s => !s.official);
+    } else if (currentFilter === 'studied') {
+        filtered = filtered.filter(s => s.studied);
+    } else if (currentFilter === 'new') {
+        filtered = filtered.filter(s => !s.studied);
+    }
+
+    const searchTerm = document.getElementById('searchInput').value.toLowerCase().trim();
+    if (searchTerm) {
+        filtered = filtered.filter(s =>
+            (s.title || '').toLowerCase().includes(searchTerm) ||
+            (s.specialty || '').toLowerCase().includes(searchTerm) ||
+            (s.tema || '').toLowerCase().includes(searchTerm) ||
+            String(s.year || '').includes(searchTerm)
+        );
+    }
+
+    filteredStations = filtered;
+
+    const grid = document.getElementById('stationsGrid');
+    let html = '';
+
+    filtered.forEach(station => {
+        const isStudied = station.studied;
+        html += `
+            <div class="station-card ${isStudied ? 'studied' : ''}">
+                <h3>${escaparHTML(station.title)}</h3>
+                <div class="station-meta">
+                    <span class="badge specialty">${escaparHTML(station.specialty || '')}</span>
+                    <span class="badge ${station.official ? 'inep' : 'medstuder'}">
+                        ${station.official ? 'INEP ' + escaparHTML(station.year) : 'MedStuder'}
+                    </span>
+                </div>
+                <div style="color:#718096; font-size:0.95em; margin-top:8px;">
+                    ${station.tema ? 'Tema: ' + escaparHTML(station.tema) : ''}
+                </div>
+                <div class="study-actions">
+                    <button class="btn btn-study" onclick="event.stopPropagation(); markAsStudied(${station.id})">
+                        ${isStudied ? '✅ Revisar' : '📖 Marcar estudada'}
+                    </button>
+                    <button class="btn btn-flashcard" onclick="event.stopPropagation(); startFlashcard(${station.id})">
+                        🃏 Flashcard
+                    </button>
+                    <button class="btn btn-delete" onclick="event.stopPropagation(); deleteStation(${station.id})">
+                        🗑️ Excluir
+                    </button>
+                </div>
+            </div>
+        `;
+    });
+
+    grid.innerHTML = html || '<div style="text-align:center; padding:40px;">Nenhuma estação encontrada</div>';
+}
+</script>
+
         // Configuração do Supabase (mantida exatamente como você pediu)
         const supabaseUrl = "https://ttncwyqcdvyuxyfmlmyd.supabase.co";
         const supabaseKey = "sb_publishable_Xwau-MBPGCHfGPOh27bzkA_mc9nSKPx";
@@ -2129,3 +2448,4 @@ Passo 3: Exames complementares"></textarea>
     </script>
 </body>
 </html>
+
