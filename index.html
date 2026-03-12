@@ -1,241 +1,33 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
-
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RevalidaMed Pro - Sistema Avançado de Estações</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <!-- Adicionando Supabase (estava faltando) -->
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
 
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
 
-<title>RevalidaMed</title>
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
 
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-
-<!-- SUPABASE -->
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
-<script>
-const supabaseUrl = "https://ttncwyqcdvyuxyfmlmyd.supabase.co";
-const supabaseKey = "sb_publishable_Xwau-MBPGCHfGPOh27bzkA_mc9nSKPx";
-
-const supabaseClient = window.supabase.createClient(supabaseUrl, supabaseKey);
-</script>
-
-<style>
-
-*{
-margin:0;
-padding:0;
-box-sizing:border-box;
-font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-}
-
-body{
-background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);
-min-height:100vh;
-padding:20px;
-}
-
-.container{
-max-width:1100px;
-margin:0 auto;
-background:white;
-border-radius:10px;
-padding:25px;
-box-shadow:0 10px 30px rgba(0,0,0,0.2);
-}
-
-/* HEADER */
-
-header{
-background:white;
-border-radius:15px;
-padding:20px;
-margin-bottom:20px;
-box-shadow:0 10px 30px rgba(0,0,0,0.2);
-display:flex;
-justify-content:space-between;
-align-items:center;
-flex-wrap:wrap;
-}
-
-h1{
-color:#2d3748;
-margin-bottom:10px;
-font-size:2.2em;
-}
-
-h1 span{
-background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);
--webkit-background-clip:text;
--webkit-text-fill-color:transparent;
-}
-
-/* BOTÃO NOVO */
-
-.btn-novo{
-background:linear-gradient(135deg,#48bb78 0%,#38a169 100%);
-color:white;
-border:none;
-padding:15px 30px;
-border-radius:50px;
-font-size:1.05em;
-font-weight:600;
-cursor:pointer;
-transition:all 0.3s;
-display:flex;
-align-items:center;
-gap:10px;
-box-shadow:0 4px 15px rgba(72,187,120,0.4);
-}
-
-.btn-novo:hover{
-transform:translateY(-3px);
-box-shadow:0 6px 20px rgba(72,187,120,0.6);
-}
-
-/* ESTATÍSTICAS */
-
-.stats{
-display:grid;
-grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
-gap:15px;
-margin-top:20px;
-margin-bottom:20px;
-}
-
-.stat-card{
-background:linear-gradient(135deg,#f6f9fc 0%,#e6f0f5 100%);
-padding:15px;
-border-radius:10px;
-text-align:center;
-box-shadow:0 4px 6px rgba(0,0,0,0.1);
-}
-
-.stat-card h3{
-color:#4a5568;
-font-size:1em;
-margin-bottom:5px;
-}
-
-.stat-card .number{
-font-size:2em;
-font-weight:bold;
-color:#667eea;
-}
-
-/* ÁREA DE TEXTO */
-
-textarea{
-width:100%;
-height:250px;
-padding:12px;
-border-radius:6px;
-border:1px solid #ccc;
-margin-bottom:15px;
-font-size:15px;
-}
-
-button{
-background:#667eea;
-color:white;
-border:none;
-padding:10px 20px;
-border-radius:6px;
-cursor:pointer;
-margin-right:10px;
-}
-
-button:hover{
-background:#5563d6;
-}
-
-</style>
-
-</head>
-
-<body>
-
-<div class="container">
-
-<header>
-<h1>📚 <span>RevalidaMed</span></h1>
-
-<button class="btn-novo">
-<i class="fa-solid fa-plus"></i> Novo Estudo
-</button>
-</header>
-
-<div class="stats">
-
-<div class="stat-card">
-<h3>Anotações</h3>
-<div class="number" id="totalNotas">0</div>
-</div>
-
-<div class="stat-card">
-<h3>Revisões</h3>
-<div class="number">0</div>
-</div>
-
-</div>
-
-<textarea id="texto" placeholder="Escreva aqui suas anotações do Revalida..."></textarea>
-
-<br>
-
-<button onclick="salvar()">Salvar</button>
-<button onclick="carregar()">Carregar</button>
-
-</div>
-
-<script>
-
-async function salvar(){
-
-const texto = document.getElementById("texto").value;
-
-const { error } = await supabaseClient
-.from("estudos")
-.insert([{conteudo:texto}]);
-
-if(error){
-alert("Erro ao salvar");
-}else{
-alert("Salvo com sucesso");
-carregar();
-}
-
-}
-
-async function carregar(){
-
-const { data, error } = await supabaseClient
-.from("estudos")
-.select("*")
-.order("id",{ascending:false})
-.limit(1);
-
-if(error){
-alert("Erro ao carregar");
-return;
-}
-
-if(data && data.length>0){
-document.getElementById("texto").value = data[0].conteudo;
-}
-
-}
-
-</script>
-
-</body>
-</html>
-}
-
-</script>
-
-</body>
-</html>
         header {
             background: white;
             border-radius: 15px;
@@ -718,6 +510,234 @@ document.getElementById("texto").value = data[0].conteudo;
             padding: 10px;
         }
 
+        .info-header {
+            background: #f7fafc;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border: 2px solid #e2e8f0;
+        }
+
+        .info-linha {
+            display: flex;
+            margin-bottom: 15px;
+            align-items: flex-start;
+            gap: 10px;
+        }
+
+        .info-label {
+            font-weight: 700;
+            color: #4a5568;
+            min-width: 100px;
+            font-size: 1.05em;
+        }
+
+        .info-valor {
+            color: #2d3748;
+            flex: 1;
+            padding: 5px 10px;
+            background: white;
+            border-radius: 6px;
+            border: 1px solid transparent;
+            transition: all 0.3s;
+        }
+
+        .edit-icon {
+            color: #667eea;
+            cursor: pointer;
+            font-size: 1.1em;
+            opacity: 0;
+            transition: opacity 0.3s;
+            margin-left: 10px;
+        }
+
+        .info-linha:hover .edit-icon {
+            opacity: 1;
+        }
+
+        .info-linha:hover .info-valor {
+            border-color: #667eea;
+            background: #f0f5ff;
+        }
+
+        .info-valor.editando {
+            border-color: #48bb78;
+            background: white;
+            padding: 4px 8px;
+        }
+
+        .edit-input {
+            width: 100%;
+            padding: 8px;
+            border: 2px solid #48bb78;
+            border-radius: 6px;
+            font-size: 1em;
+            font-family: inherit;
+        }
+
+        .edit-input:focus {
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(72, 187, 120, 0.2);
+        }
+
+        .topicos-formatados {
+            line-height: 2;
+        }
+
+        .topico {
+            font-weight: bold;
+            text-transform: uppercase;
+            display: block;
+            margin-top: 1cm;
+            margin-bottom: 10px;
+            color: #2d3748;
+            font-size: 1.1em;
+            border-bottom: 1px solid #cbd5e0;
+            padding-bottom: 5px;
+        }
+
+        .topico:first-of-type {
+            margin-top: 0;
+        }
+
+        .conteudo-topico {
+            margin-left: 20px;
+            margin-bottom: 20px;
+            color: #4a5568;
+            white-space: pre-line;
+        }
+
+        .checklist-tabela {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            font-size: 0.95em;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+        }
+
+        .checklist-tabela th {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            font-weight: 600;
+            padding: 12px;
+            text-align: center;
+            border: 1px solid #5a67d8;
+        }
+
+        .checklist-tabela td {
+            padding: 12px;
+            border: 1px solid #e2e8f0;
+            vertical-align: top;
+        }
+
+        .checklist-tabela tr:nth-child(even) {
+            background-color: #f8fafc;
+        }
+
+        .checklist-tabela tr:hover {
+            background-color: #f0f5ff;
+        }
+
+        .checklist-item-principal {
+            font-weight: bold;
+            color: #2d3748;
+            background-color: #edf2f7;
+        }
+
+        .checklist-subitem {
+            padding-left: 20px;
+            color: #4a5568;
+        }
+
+        .checklist-pontuacao {
+            text-align: center;
+            font-weight: bold;
+        }
+
+        .avaliacao-select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #cbd5e0;
+            border-radius: 6px;
+            background: white;
+            font-weight: 600;
+        }
+
+        .image-attachment {
+            border: 2px dashed #cbd5e0;
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+            margin: 15px 0;
+            cursor: pointer;
+        }
+
+        .image-attachment:hover {
+            border-color: #667eea;
+            background: #f7fafc;
+        }
+
+        .image-preview {
+            max-width: 100%;
+            max-height: 220px;
+            margin-top: 10px;
+            border-radius: 8px;
+        }
+
+        .flashcard-controls {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+
+        .flashcard-btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .flashcard-btn.prev {
+            background: #f56565;
+            color: white;
+        }
+
+        .flashcard-btn.prev:hover {
+            background: #c53030;
+        }
+
+        .flashcard-btn.next {
+            background: #48bb78;
+            color: white;
+        }
+
+        .flashcard-btn.next:hover {
+            background: #38a169;
+        }
+
+        .flashcard-btn.shuffle {
+            background: #9f7aea;
+            color: white;
+        }
+
+        .flashcard-btn.shuffle:hover {
+            background: #805ad5;
+        }
+
+        .flashcard-btn.close {
+            background: #718096;
+            color: white;
+        }
+
+        .flashcard-btn.close:hover {
+            background: #4a5568;
+        }
+
         .progress-bar {
             width: 100%;
             height: 10px;
@@ -731,6 +751,105 @@ document.getElementById("texto").value = data[0].conteudo;
             height: 100%;
             background: linear-gradient(90deg, #52c41a, #1890ff);
             transition: width 0.3s;
+        }
+
+        .acoes-checklist {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f7fafc;
+            border-radius: 8px;
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .btn-calcular {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .btn-calcular:hover {
+            background: #5a67d8;
+        }
+
+        .resultado-pontuacao {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #2d3748;
+            background: white;
+            padding: 8px 16px;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .accordion-box {
+            margin-bottom: 14px;
+            border: 1px solid #dbe3f0;
+            border-radius: 10px;
+            overflow: hidden;
+            background: #fff;
+        }
+
+        .accordion-header {
+            width: 100%;
+            border: none;
+            background: #f7fafc;
+            padding: 14px 16px;
+            text-align: left;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: #2d3748;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            font-size: 1em;
+        }
+
+        .accordion-header:hover {
+            background: #edf2f7;
+        }
+
+        .accordion-arrow {
+            transition: transform 0.25s ease;
+            font-size: 0.9em;
+        }
+
+        .accordion-box.open .accordion-arrow {
+            transform: rotate(90deg);
+        }
+
+        .accordion-content {
+            display: none;
+            padding: 16px 18px;
+            color: #4a5568;
+            white-space: pre-line;
+            border-top: 1px solid #e2e8f0;
+            background: #ffffff;
+        }
+
+        .accordion-box.open .accordion-content {
+            display: block;
+        }
+
+        .descricao-adequado {
+            background: #eefbf3;
+        }
+
+        .descricao-parcial {
+            background: #fffbea;
+        }
+
+        .descricao-inadequado {
+            background: #fff5f5;
         }
 
         @media (max-width: 768px) {
@@ -753,7 +872,7 @@ document.getElementById("texto").value = data[0].conteudo;
     <div class="container">
         <header>
             <div>
-                <h1>📚 <span>RevalidaMed</span> - Versão Local</h1>
+                <h1>📚 <span>RevalidaMed</span> - Flashcards das Estações</h1>
             </div>
             <button class="btn-novo" onclick="abrirModalNovaEstacao()">
                 <span style="font-size: 1.5em;">➕</span> Nova Estação
@@ -870,6 +989,12 @@ Colecistite aguda
 Hemograma
 PCR
 USG abdome"></textarea>
+                <div class="image-attachment" onclick="document.getElementById('uploadImagem').click()">
+                    📷 Clique para anexar imagem (opcional)
+                    <input type="file" id="uploadImagem" accept="image/*" style="display: none;" onchange="previewImagem(this)">
+                </div>
+                <div id="previewImagemContainer"></div>
+                <input type="hidden" id="imagemBase64">
             </div>
 
             <div class="form-group">
@@ -936,6 +1061,13 @@ Estabelecer conduta inicial"></textarea>
     </div>
 
     <script>
+        // Configuração do Supabase (mantida exatamente como você pediu)
+        const supabaseUrl = "https://ttncwyqcdvyuxyfmlmyd.supabase.co";
+        const supabaseKey = "sb_publishable_Xwau-MBPGCHfGPOh27bzkA_mc9nSKPx";
+
+        const supabaseClient = window.supabase.createClient(supabaseUrl, supabaseKey);
+
+        // Variáveis globais
         let stationsData = [];
         let currentFilter = "all";
         let currentSpecialty = "all";
@@ -943,7 +1075,9 @@ Estabelecer conduta inicial"></textarea>
         let flashcardDeck = [];
         let currentFlashcardIndex = 0;
         let currentFlashcardPage = 'geral';
+        let imagemTemp = null;
 
+        // Funções de escape e formatação (mantidas iguais)
         function escaparHTML(str) {
             return String(str || '')
                 .replace(/&/g, '&amp;')
@@ -1223,54 +1357,148 @@ Estabelecer conduta inicial"></textarea>
                 <div class="info-header">
                     <div class="info-linha">
                         <span class="info-label">Nome:</span>
-                        <span class="info-valor">${escaparHTML(station.title || '')}</span>
+                        <span class="info-valor" id="edit-nome">${escaparHTML(station.title || '')}</span>
+                        <i class="fas fa-pencil-alt edit-icon" onclick="iniciarEdicao('title', '${String(station.title || '').replace(/'/g, "\\'")}')"></i>
                     </div>
                     <div class="info-linha">
                         <span class="info-label">Área:</span>
-                        <span class="info-valor">${escaparHTML(station.specialty || '')}</span>
+                        <span class="info-valor" id="edit-area">${escaparHTML(station.specialty || '')}</span>
+                        <i class="fas fa-pencil-alt edit-icon" onclick="iniciarEdicao('specialty', '${String(station.specialty || '').replace(/'/g, "\\'")}')"></i>
                     </div>
                     <div class="info-linha">
                         <span class="info-label">Tema:</span>
-                        <span class="info-valor">${escaparHTML(station.tema || 'Não definido')}</span>
+                        <span class="info-valor" id="edit-tema">${escaparHTML(station.tema || 'Não definido')}</span>
+                        <i class="fas fa-pencil-alt edit-icon" onclick="iniciarEdicao('tema', '${String(station.tema || '').replace(/'/g, "\\'")}')"></i>
                     </div>
                     <div class="info-linha">
                         <span class="info-label">Revalida:</span>
-                        <span class="info-valor">${escaparHTML(station.year || '')}</span>
+                        <span class="info-valor" id="edit-ano">${escaparHTML(station.year || '')}</span>
+                        <i class="fas fa-pencil-alt edit-icon" onclick="iniciarEdicao('year', '${station.year || ''}')"></i>
                     </div>
                 </div>
             `;
         }
 
-        function carregarDados() {
-            try {
-                const dadosSalvos = localStorage.getItem('revalidaStations');
-                if (dadosSalvos) {
-                    stationsData = JSON.parse(dadosSalvos);
-                } else {
-                    // Dados iniciais de exemplo
-                    stationsData = [
-                        {
-                            id: 1,
-                            title: "Dor Abdominal - Apendicite",
-                            specialty: "Cirurgia Geral",
-                            tema: "Abdome Agudo",
-                            year: 2023,
-                            official: true,
-                            studied: false,
-                            instrucoes: {
-                                candidato: "Você está no pronto-socorro. Paciente com dor abdominal há 2 dias.",
-                                ator: "Dor em FID, piora com movimento, sem febre."
-                            },
-                            content: {
-                                geral: "*ANAMNESE*\nDor iniciou em região periumbilical, migrou para FID há 12h. Náuseas, sem vômitos.\n\n*EXAME FÍSICO*\nSinal de Blumberg positivo. Descompressão brusca dolorosa.",
-                                indicacoes: "*INSTRUÇÕES DO CANDIDATO*\nPaciente com dor abdominal há 2 dias. Realize anamnese e exame físico.\n\n*INSTRUÇÕES DO ATOR*\nDor em FID, piora com movimento, sem febre.",
-                                impressos: "*HIPÓTESE*\nApendicite aguda\n\n*EXAMES*\nHemograma\nUSG abdome total",
-                                checklist: "1. ANAMNESE\n(1) Pergunta início da dor\n(2) Pergunta localização\n(3) Pergunta migração\n(4) Pergunta sintomas associados\nAdequado: Pergunta 4 itens\nParcialmente adequado: Pergunta 2-3 itens\nInadequado: Pergunta 0-1 item",
-                                resumo: "*PONTOS-CHAVE*\nDor migratória é clássica\nSinal de Blumberg\nApendicite é a principal hipótese"
-                            }
-                        }
-                    ];
+        function obterIdCampoEdicao(campo) {
+            if (campo === 'title') return 'edit-nome';
+            if (campo === 'specialty') return 'edit-area';
+            if (campo === 'tema') return 'edit-tema';
+            if (campo === 'year') return 'edit-ano';
+            return '';
+        }
+
+        function iniciarEdicao(campo, valorAtual) {
+            const elemento = document.getElementById(obterIdCampoEdicao(campo));
+            if (!elemento) return;
+
+            const input = document.createElement('input');
+            input.type = campo === 'year' ? 'number' : 'text';
+            input.value = valorAtual;
+            input.className = 'edit-input';
+
+            elemento.innerHTML = '';
+            elemento.appendChild(input);
+            elemento.classList.add('editando');
+            input.focus();
+
+            input.onblur = function() {
+                salvarEdicao(campo, input.value, elemento);
+            };
+
+            input.onkeypress = function(e) {
+                if (e.key === 'Enter') {
+                    input.blur();
                 }
+            };
+        }
+
+        function salvarEdicao(campo, novoValor, elemento) {
+            const estacao = flashcardDeck[currentFlashcardIndex];
+            if (!estacao) return;
+
+            if (campo === 'title') {
+                estacao.title = novoValor.trim();
+            } else if (campo === 'specialty') {
+                estacao.specialty = novoValor.trim();
+            } else if (campo === 'tema') {
+                estacao.tema = novoValor.trim();
+            } else if (campo === 'year') {
+                estacao.year = parseInt(novoValor) || estacao.year;
+            }
+
+            const index = stationsData.findIndex(s => s.id === estacao.id);
+            if (index !== -1) {
+                stationsData[index] = estacao;
+            }
+
+            salvarDados();
+            renderSpecialties();
+            renderFilters();
+            renderStations();
+
+            elemento.innerHTML = escaparHTML(campo === 'year' ? estacao.year : novoValor);
+            elemento.classList.remove('editando');
+        }
+
+        function previewImagem(input) {
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    imagemTemp = e.target.result;
+                    document.getElementById('previewImagemContainer').innerHTML =
+                        `<img src="${e.target.result}" class="image-preview" alt="Preview">`;
+                    document.getElementById('imagemBase64').value = e.target.result;
+                };
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        // Funções de carregamento e salvamento (agora usando Supabase)
+        async function carregarDados() {
+            try {
+                // Tenta carregar do Supabase primeiro
+                const { data, error } = await supabaseClient
+                    .from('estacoes')
+                    .select('*');
+                
+                if (error) {
+                    console.error("Erro ao carregar do Supabase, usando localStorage:", error);
+                    // Fallback para localStorage
+                    const dadosSalvos = localStorage.getItem('revalidaStations');
+                    if (dadosSalvos) {
+                        stationsData = JSON.parse(dadosSalvos);
+                    } else {
+                        stationsData = [
+                            {
+                                id: 1,
+                                title: "Dor Abdominal - Caso Clínico",
+                                specialty: "Clínica Médica",
+                                tema: "Gastroenterologia",
+                                year: 2023,
+                                source: "inep",
+                                official: true,
+                                studied: false,
+                                instrucoes: {
+                                    candidato: "Você está no ambulatório. Paciente feminina, 32 anos, queixa-se de dor abdominal há 3 dias.",
+                                    ator: "Você é a paciente. Dor em andar superior do abdome, tipo queimação, pós-prandial."
+                                },
+                                content: {
+                                    geral: "*HISTÓRIA DA DOENÇA ATUAL*\nPaciente relata dor abdominal iniciada há 3 dias.\n\n*ANTECEDENTES PESSOAIS*\nNega comorbidades. Nega cirurgias prévias.",
+                                    indicacoes: "*INSTRUÇÕES DO CANDIDATO*\nVocê está no ambulatório. Paciente feminina, 32 anos, queixa-se de dor abdominal há 3 dias.\n\n*INSTRUÇÕES DO ATOR*\nVocê é a paciente. Dor em andar superior do abdome, tipo queimação, pós-prandial.",
+                                    impressos: "*HIPÓTESE DIAGNÓSTICA*\nDoença do refluxo gastroesofágico\n\n*EXAMES SOLICITADOS*\nEndoscopia digestiva alta",
+                                    checklist: "1. ACOLHIMENTO INICIAL\n(1) Apresenta-se à paciente.\n(2) Cumprimenta a paciente.\n(3) Pergunta o nome e a idade da paciente.\nAdequado: Realiza os 3 itens.\nParcialmente adequado: Realiza 2 itens.\nInadequado: Realiza 1 ou nenhum item.\n\n2. CARACTERIZAÇÃO DA DOR ABDOMINAL\nInvestiga ao menos 4 dos seguintes aspectos.\n(1) Início\n(2) Localização\n(3) Irradiação\n(4) Intensidade\n(5) Fatores de melhora ou piora\nAdequado: Investiga 4 ou 5 aspectos.\nParcialmente adequado: Investiga 2 ou 3 aspectos.\nInadequado: Investiga 0 ou 1 aspecto.",
+                                    resumo: "*PONTOS-CHAVE*\nCaracterizar bem a dor\nInvestigar sintomas de alarme\nConsiderar hipóteses diferenciais"
+                                },
+                                imagem: null
+                            }
+                        ];
+                    }
+                }
+                
+                if (data) {
+                    stationsData = data;
+                }
+
                 atualizarContadores();
                 renderSpecialties();
                 renderFilters();
@@ -1285,23 +1513,37 @@ Estabelecer conduta inicial"></textarea>
             }
         }
 
-        function salvarDados() {
+        async function salvarDados() {
             try {
-                localStorage.setItem('revalidaStations', JSON.stringify(stationsData));
+                // Tenta salvar no Supabase
+                const { error } = await supabaseClient
+                    .from('estacoes')
+                    .upsert(stationsData);
+                
+                if (error) {
+                    console.error("Erro ao salvar no Supabase, salvando no localStorage:", error);
+                    localStorage.setItem('revalidaStations', JSON.stringify(stationsData));
+                }
+                
                 atualizarContadores();
             } catch (e) {
                 console.error("Erro ao salvar dados:", e);
+                localStorage.setItem('revalidaStations', JSON.stringify(stationsData));
             }
         }
 
         function atualizarContadores() {
             document.getElementById('totalStations').textContent = stationsData.length;
+
             const oficial = stationsData.filter(s => s.official).length;
             document.getElementById('officialStations').textContent = oficial;
+
             const medstuder = stationsData.filter(s => !s.official).length;
             document.getElementById('medstuderStations').textContent = medstuder;
+
             const estudadas = stationsData.filter(s => s.studied).length;
             document.getElementById('studiedStations').textContent = estudadas;
+
             const progresso = stationsData.length > 0 ? (estudadas / stationsData.length) * 100 : 0;
             document.getElementById('progressFill').style.width = progresso + '%';
         }
@@ -1312,6 +1554,7 @@ Estabelecer conduta inicial"></textarea>
                 station.studied = !station.studied;
                 salvarDados();
                 renderStations();
+
                 if (document.getElementById('flashcardMode').classList.contains('active')) {
                     mostrarPaginaFlashcard(currentFlashcardPage);
                 }
@@ -1463,13 +1706,16 @@ Estabelecer conduta inicial"></textarea>
             document.getElementById('novoImpressao').value = '';
             document.getElementById('novoChecklist').value = '';
             document.getElementById('novoResumo').value = '';
+            document.getElementById('previewImagemContainer').innerHTML = '';
+            document.getElementById('imagemBase64').value = '';
+            imagemTemp = null;
         }
 
         function fecharModalNovaEstacao() {
             document.getElementById('modalNovaEstacao').classList.remove('active');
         }
 
-        function salvarNovaEstacao() {
+        async function salvarNovaEstacao() {
             const titulo = document.getElementById('novoTitulo').value.trim();
             if (!titulo) {
                 alert('Por favor, preencha o título da estação.');
@@ -1501,11 +1747,12 @@ Estabelecer conduta inicial"></textarea>
                     impressos: document.getElementById('novoImpressao').value.trim(),
                     checklist: document.getElementById('novoChecklist').value.trim(),
                     resumo: document.getElementById('novoResumo').value.trim()
-                }
+                },
+                imagem: document.getElementById('imagemBase64').value || null
             };
 
             stationsData.push(novaEstacao);
-            salvarDados();
+            await salvarDados();
             renderSpecialties();
             renderFilters();
             renderStations();
@@ -1574,6 +1821,9 @@ Estabelecer conduta inicial"></textarea>
                 conteudo = formatarTextoComTopicos(station.content?.indicacoes || '');
             } else if (pagina === 'impressos') {
                 conteudo = formatarImpressosColapsaveis(station.content?.impressos || '');
+                if (station.imagem) {
+                    conteudo += `<div style="margin-top:20px; text-align:center;"><img src="${station.imagem}" class="image-preview" style="max-width:100%; max-height:300px;" alt="Imagem da estação"></div>`;
+                }
             } else if (pagina === 'checklist') {
                 conteudo = formatarChecklistComoTabela(station.content?.checklist || '');
             } else if (pagina === 'resumo') {
@@ -1652,12 +1902,8 @@ Estabelecer conduta inicial"></textarea>
             }
         });
 
+        // Inicializar
         carregarDados();
     </script>
 </body>
 </html>
-
-
-
-
-
