@@ -36,7 +36,7 @@ padding:20px;
 }
 
 .container{
-max-width:1000px;
+max-width:1100px;
 margin:0 auto;
 background:white;
 border-radius:10px;
@@ -44,10 +44,86 @@ padding:25px;
 box-shadow:0 10px 30px rgba(0,0,0,0.2);
 }
 
+/* HEADER */
+
+header{
+background:white;
+border-radius:15px;
+padding:20px;
+margin-bottom:20px;
+box-shadow:0 10px 30px rgba(0,0,0,0.2);
+display:flex;
+justify-content:space-between;
+align-items:center;
+flex-wrap:wrap;
+}
+
 h1{
-text-align:center;
+color:#2d3748;
+margin-bottom:10px;
+font-size:2.2em;
+}
+
+h1 span{
+background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);
+-webkit-background-clip:text;
+-webkit-text-fill-color:transparent;
+}
+
+/* BOTÃO NOVO */
+
+.btn-novo{
+background:linear-gradient(135deg,#48bb78 0%,#38a169 100%);
+color:white;
+border:none;
+padding:15px 30px;
+border-radius:50px;
+font-size:1.05em;
+font-weight:600;
+cursor:pointer;
+transition:all 0.3s;
+display:flex;
+align-items:center;
+gap:10px;
+box-shadow:0 4px 15px rgba(72,187,120,0.4);
+}
+
+.btn-novo:hover{
+transform:translateY(-3px);
+box-shadow:0 6px 20px rgba(72,187,120,0.6);
+}
+
+/* ESTATÍSTICAS */
+
+.stats{
+display:grid;
+grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+gap:15px;
+margin-top:20px;
 margin-bottom:20px;
 }
+
+.stat-card{
+background:linear-gradient(135deg,#f6f9fc 0%,#e6f0f5 100%);
+padding:15px;
+border-radius:10px;
+text-align:center;
+box-shadow:0 4px 6px rgba(0,0,0,0.1);
+}
+
+.stat-card h3{
+color:#4a5568;
+font-size:1em;
+margin-bottom:5px;
+}
+
+.stat-card .number{
+font-size:2em;
+font-weight:bold;
+color:#667eea;
+}
+
+/* ÁREA DE TEXTO */
 
 textarea{
 width:100%;
@@ -81,11 +157,31 @@ background:#5563d6;
 
 <div class="container">
 
-<h1>📚 RevalidaMed – Área de Estudo</h1>
+<header>
+<h1>📚 <span>RevalidaMed</span></h1>
+
+<button class="btn-novo">
+<i class="fa-solid fa-plus"></i> Novo Estudo
+</button>
+</header>
+
+<div class="stats">
+
+<div class="stat-card">
+<h3>Anotações</h3>
+<div class="number" id="totalNotas">0</div>
+</div>
+
+<div class="stat-card">
+<h3>Revisões</h3>
+<div class="number">0</div>
+</div>
+
+</div>
 
 <textarea id="texto" placeholder="Escreva aqui suas anotações do Revalida..."></textarea>
 
-<br><br>
+<br>
 
 <button onclick="salvar()">Salvar</button>
 <button onclick="carregar()">Carregar</button>
@@ -100,12 +196,13 @@ const texto = document.getElementById("texto").value;
 
 const { error } = await supabaseClient
 .from("estudos")
-.insert([{ conteudo: texto }]);
+.insert([{conteudo:texto}]);
 
 if(error){
 alert("Erro ao salvar");
 }else{
 alert("Salvo com sucesso");
+carregar();
 }
 
 }
@@ -1559,6 +1656,7 @@ Estabelecer conduta inicial"></textarea>
     </script>
 </body>
 </html>
+
 
 
 
