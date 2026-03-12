@@ -3,8 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RevalidaMed Pro - Sistema Avançado de Estações</title>
+    <title>RevalidaMed Pro - App Online</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    
     <style>
         * {
             margin: 0;
@@ -16,9 +22,251 @@
         body {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
+        }
+
+        /* Tela de Login */
+        #loginScreen {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
             padding: 20px;
         }
 
+        .login-container {
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            width: 100%;
+            max-width: 450px;
+            animation: slideUp 0.5s ease;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .login-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .login-header h1 {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-size: 2.2em;
+            margin-bottom: 10px;
+        }
+
+        .login-header p {
+            color: #718096;
+            font-size: 1.1em;
+        }
+
+        .login-container input {
+            width: 100%;
+            padding: 15px;
+            margin: 10px 0;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: 0.3s;
+        }
+
+        .login-container input:focus {
+            border-color: #667eea;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .login-container button {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            margin: 10px 0;
+            transition: all 0.3s;
+        }
+
+        .login-container button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+        }
+
+        .login-container button.google-btn {
+            background: #db4437;
+            margin-top: 5px;
+        }
+
+        .login-container button.google-btn:hover {
+            background: #c53929;
+        }
+
+        .login-footer {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .login-footer a {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .login-footer a:hover {
+            text-decoration: underline;
+        }
+
+        .divider {
+            display: flex;
+            align-items: center;
+            text-align: center;
+            color: #a0aec0;
+            margin: 20px 0;
+        }
+
+        .divider::before,
+        .divider::after {
+            content: '';
+            flex: 1;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .divider span {
+            padding: 0 10px;
+        }
+
+        .error-message {
+            background: #fed7d7;
+            color: #c53030;
+            padding: 10px;
+            border-radius: 8px;
+            margin: 10px 0;
+            display: none;
+        }
+
+        .success-message {
+            background: #c6f6d5;
+            color: #22543d;
+            padding: 10px;
+            border-radius: 8px;
+            margin: 10px 0;
+            display: none;
+        }
+
+        /* Loading Overlay */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(255,255,255,0.9);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 3000;
+        }
+
+        .loading-overlay.active {
+            display: flex;
+        }
+
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid #e2e8f0;
+            border-top-color: #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* App Principal */
+        #mainApp {
+            display: none;
+            padding: 20px;
+        }
+
+        .app-header {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        .app-header h1 {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-size: 1.8em;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .user-email {
+            color: #4a5568;
+            font-weight: 500;
+        }
+
+        .logout-btn {
+            background: #f56565;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: 0.3s;
+        }
+
+        .logout-btn:hover {
+            background: #c53030;
+        }
+
+        .sync-status {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            color: #48bb78;
+            font-size: 0.9em;
+        }
+
+        .sync-status.syncing {
+            color: #ed8936;
+        }
+
+        .sync-status.error {
+            color: #f56565;
+        }
+
+        /* Seu CSS existente aqui */
         .container {
             max-width: 1400px;
             margin: 0 auto;
@@ -506,234 +754,6 @@
             padding: 10px;
         }
 
-        .info-header {
-            background: #f7fafc;
-            border-radius: 12px;
-            padding: 20px;
-            margin-bottom: 20px;
-            border: 2px solid #e2e8f0;
-        }
-
-        .info-linha {
-            display: flex;
-            margin-bottom: 15px;
-            align-items: flex-start;
-            gap: 10px;
-        }
-
-        .info-label {
-            font-weight: 700;
-            color: #4a5568;
-            min-width: 100px;
-            font-size: 1.05em;
-        }
-
-        .info-valor {
-            color: #2d3748;
-            flex: 1;
-            padding: 5px 10px;
-            background: white;
-            border-radius: 6px;
-            border: 1px solid transparent;
-            transition: all 0.3s;
-        }
-
-        .edit-icon {
-            color: #667eea;
-            cursor: pointer;
-            font-size: 1.1em;
-            opacity: 0;
-            transition: opacity 0.3s;
-            margin-left: 10px;
-        }
-
-        .info-linha:hover .edit-icon {
-            opacity: 1;
-        }
-
-        .info-linha:hover .info-valor {
-            border-color: #667eea;
-            background: #f0f5ff;
-        }
-
-        .info-valor.editando {
-            border-color: #48bb78;
-            background: white;
-            padding: 4px 8px;
-        }
-
-        .edit-input {
-            width: 100%;
-            padding: 8px;
-            border: 2px solid #48bb78;
-            border-radius: 6px;
-            font-size: 1em;
-            font-family: inherit;
-        }
-
-        .edit-input:focus {
-            outline: none;
-            box-shadow: 0 0 0 3px rgba(72, 187, 120, 0.2);
-        }
-
-        .topicos-formatados {
-            line-height: 2;
-        }
-
-        .topico {
-            font-weight: bold;
-            text-transform: uppercase;
-            display: block;
-            margin-top: 1cm;
-            margin-bottom: 10px;
-            color: #2d3748;
-            font-size: 1.1em;
-            border-bottom: 1px solid #cbd5e0;
-            padding-bottom: 5px;
-        }
-
-        .topico:first-of-type {
-            margin-top: 0;
-        }
-
-        .conteudo-topico {
-            margin-left: 20px;
-            margin-bottom: 20px;
-            color: #4a5568;
-            white-space: pre-line;
-        }
-
-        .checklist-tabela {
-            width: 100%;
-            border-collapse: collapse;
-            margin: 20px 0;
-            font-size: 0.95em;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
-        }
-
-        .checklist-tabela th {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            font-weight: 600;
-            padding: 12px;
-            text-align: center;
-            border: 1px solid #5a67d8;
-        }
-
-        .checklist-tabela td {
-            padding: 12px;
-            border: 1px solid #e2e8f0;
-            vertical-align: top;
-        }
-
-        .checklist-tabela tr:nth-child(even) {
-            background-color: #f8fafc;
-        }
-
-        .checklist-tabela tr:hover {
-            background-color: #f0f5ff;
-        }
-
-        .checklist-item-principal {
-            font-weight: bold;
-            color: #2d3748;
-            background-color: #edf2f7;
-        }
-
-        .checklist-subitem {
-            padding-left: 20px;
-            color: #4a5568;
-        }
-
-        .checklist-pontuacao {
-            text-align: center;
-            font-weight: bold;
-        }
-
-        .avaliacao-select {
-            width: 100%;
-            padding: 8px;
-            border: 1px solid #cbd5e0;
-            border-radius: 6px;
-            background: white;
-            font-weight: 600;
-        }
-
-        .image-attachment {
-            border: 2px dashed #cbd5e0;
-            border-radius: 10px;
-            padding: 20px;
-            text-align: center;
-            margin: 15px 0;
-            cursor: pointer;
-        }
-
-        .image-attachment:hover {
-            border-color: #667eea;
-            background: #f7fafc;
-        }
-
-        .image-preview {
-            max-width: 100%;
-            max-height: 220px;
-            margin-top: 10px;
-            border-radius: 8px;
-        }
-
-        .flashcard-controls {
-            display: flex;
-            justify-content: center;
-            gap: 20px;
-            margin-top: 20px;
-            flex-wrap: wrap;
-        }
-
-        .flashcard-btn {
-            padding: 12px 25px;
-            border: none;
-            border-radius: 10px;
-            font-size: 1em;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-
-        .flashcard-btn.prev {
-            background: #f56565;
-            color: white;
-        }
-
-        .flashcard-btn.prev:hover {
-            background: #c53030;
-        }
-
-        .flashcard-btn.next {
-            background: #48bb78;
-            color: white;
-        }
-
-        .flashcard-btn.next:hover {
-            background: #38a169;
-        }
-
-        .flashcard-btn.shuffle {
-            background: #9f7aea;
-            color: white;
-        }
-
-        .flashcard-btn.shuffle:hover {
-            background: #805ad5;
-        }
-
-        .flashcard-btn.close {
-            background: #718096;
-            color: white;
-        }
-
-        .flashcard-btn.close:hover {
-            background: #4a5568;
-        }
-
         .progress-bar {
             width: 100%;
             height: 10px;
@@ -749,103 +769,39 @@
             transition: width 0.3s;
         }
 
-        .acoes-checklist {
-            margin-top: 20px;
-            padding: 15px;
-            background: #f7fafc;
-            border-radius: 8px;
-            display: flex;
-            gap: 10px;
-            justify-content: center;
-            align-items: center;
-            flex-wrap: wrap;
-        }
-
-        .btn-calcular {
-            background: #667eea;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: 600;
-        }
-
-        .btn-calcular:hover {
-            background: #5a67d8;
-        }
-
-        .resultado-pontuacao {
-            font-size: 1.2em;
-            font-weight: bold;
-            color: #2d3748;
+        .connection-status {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
             background: white;
-            padding: 8px 16px;
-            border-radius: 8px;
-            border: 1px solid #e2e8f0;
-        }
-
-        .accordion-box {
-            margin-bottom: 14px;
-            border: 1px solid #dbe3f0;
-            border-radius: 10px;
-            overflow: hidden;
-            background: #fff;
-        }
-
-        .accordion-header {
-            width: 100%;
-            border: none;
-            background: #f7fafc;
-            padding: 14px 16px;
-            text-align: left;
-            font-weight: 700;
-            text-transform: uppercase;
-            color: #2d3748;
-            cursor: pointer;
+            padding: 10px 20px;
+            border-radius: 30px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
             display: flex;
             align-items: center;
-            justify-content: space-between;
             gap: 10px;
-            font-size: 1em;
-        }
-
-        .accordion-header:hover {
-            background: #edf2f7;
-        }
-
-        .accordion-arrow {
-            transition: transform 0.25s ease;
+            z-index: 100;
             font-size: 0.9em;
         }
 
-        .accordion-box.open .accordion-arrow {
-            transform: rotate(90deg);
+        .connection-status.online {
+            border-left: 4px solid #48bb78;
         }
 
-        .accordion-content {
-            display: none;
-            padding: 16px 18px;
-            color: #4a5568;
-            white-space: pre-line;
-            border-top: 1px solid #e2e8f0;
-            background: #ffffff;
+        .connection-status.offline {
+            border-left: 4px solid #f56565;
         }
 
-        .accordion-box.open .accordion-content {
-            display: block;
+        .connection-status i {
+            font-size: 1.2em;
         }
 
-        .descricao-adequado {
-            background: #eefbf3;
+        .connection-status.online i {
+            color: #48bb78;
         }
 
-        .descricao-parcial {
-            background: #fffbea;
-        }
-
-        .descricao-inadequado {
-            background: #fff5f5;
+        .connection-status.offline i {
+            color: #f56565;
         }
 
         @media (max-width: 768px) {
@@ -861,62 +817,147 @@
             .flashcard-pages {
                 justify-content: center;
             }
+            
+            .app-header {
+                flex-direction: column;
+                gap: 15px;
+                text-align: center;
+            }
+            
+            .user-info {
+                flex-direction: column;
+                width: 100%;
+            }
+            
+            .logout-btn {
+                width: 100%;
+            }
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <header>
-            <div>
-                <h1>📚 <span>RevalidaMed</span> - Flashcards das Estações</h1>
-            </div>
-            <button class="btn-novo" onclick="abrirModalNovaEstacao()">
-                <span style="font-size: 1.5em;">➕</span> Nova Estação
-            </button>
-        </header>
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="spinner"></div>
+    </div>
 
-        <div class="stats">
-            <div class="stat-card">
-                <h3>Total de Estações</h3>
-                <div class="number" id="totalStations">0</div>
-            </div>
-            <div class="stat-card">
-                <h3>Oficiais INEP</h3>
-                <div class="number" id="officialStations">0</div>
-            </div>
-            <div class="stat-card">
-                <h3>MedStuder</h3>
-                <div class="number" id="medstuderStations">0</div>
-            </div>
-            <div class="stat-card">
-                <h3>Estudadas</h3>
-                <div class="number" id="studiedStations">0</div>
-            </div>
-        </div>
-
-        <div class="main-content">
-            <div class="sidebar">
-                <h2>📋 Especialidades</h2>
-                <div id="specialties"></div>
-
-                <h2 style="margin-top: 30px;">🔍 Filtros</h2>
-                <div id="filters"></div>
+    <!-- Tela de Login -->
+    <div id="loginScreen">
+        <div class="login-container">
+            <div class="login-header">
+                <h1>🏥 RevalidaMed Pro</h1>
+                <p>Faça login para acessar seus estudos</p>
             </div>
 
-            <div class="study-area">
-                <div class="search-box">
-                    <input type="text" id="searchInput" placeholder="🔍 Buscar estação por assunto, especialidade, tema ou ano...">
+            <div class="error-message" id="loginError"></div>
+            <div class="success-message" id="loginSuccess"></div>
+
+            <div id="loginForm">
+                <input type="email" id="loginEmail" placeholder="Seu email" autocomplete="email">
+                <input type="password" id="loginPassword" placeholder="Sua senha" autocomplete="current-password">
+                <button onclick="fazerLogin()">Entrar</button>
+                
+                <div class="divider">
+                    <span>ou</span>
                 </div>
+                
+                <button class="google-btn" onclick="loginComGoogle()">
+                    <i class="fab fa-google"></i> Continuar com Google
+                </button>
+            </div>
 
-                <div class="progress-bar">
-                    <div class="progress-fill" id="progressFill" style="width: 0%"></div>
-                </div>
+            <div id="registerForm" style="display: none;">
+                <input type="text" id="registerName" placeholder="Seu nome">
+                <input type="email" id="registerEmail" placeholder="Seu email">
+                <input type="password" id="registerPassword" placeholder="Crie uma senha (mínimo 6 caracteres)">
+                <button onclick="criarConta()">Criar Conta</button>
+                <button class="google-btn" onclick="loginComGoogle()">
+                    <i class="fab fa-google"></i> Continuar com Google
+                </button>
+            </div>
 
-                <div id="stationsGrid" class="stations-grid"></div>
+            <div class="login-footer">
+                <a href="#" onclick="toggleLoginRegister()" id="toggleLoginRegister">Não tem uma conta? Cadastre-se</a>
+                <br>
+                <a href="#" onclick="recuperarSenha()" style="font-size: 0.9em;">Esqueceu sua senha?</a>
             </div>
         </div>
     </div>
 
+    <!-- App Principal -->
+    <div id="mainApp">
+        <div class="app-header">
+            <h1>📚 RevalidaMed - Estações Clínicas</h1>
+            <div class="user-info">
+                <span class="user-email" id="userEmail"></span>
+                <div class="sync-status" id="syncStatus">
+                    <i class="fas fa-cloud-upload-alt"></i>
+                    <span>Sincronizado</span>
+                </div>
+                <button class="logout-btn" onclick="fazerLogout()">Sair</button>
+            </div>
+        </div>
+
+        <!-- Connection Status -->
+        <div class="connection-status online" id="connectionStatus">
+            <i class="fas fa-wifi"></i>
+            <span>Online</span>
+        </div>
+
+        <div class="container">
+            <header>
+                <div>
+                    <h1>📚 <span>RevalidaMed</span> - Flashcards das Estações</h1>
+                </div>
+                <button class="btn-novo" onclick="abrirModalNovaEstacao()">
+                    <span style="font-size: 1.5em;">➕</span> Nova Estação
+                </button>
+            </header>
+
+            <div class="stats">
+                <div class="stat-card">
+                    <h3>Total de Estações</h3>
+                    <div class="number" id="totalStations">0</div>
+                </div>
+                <div class="stat-card">
+                    <h3>Oficiais INEP</h3>
+                    <div class="number" id="officialStations">0</div>
+                </div>
+                <div class="stat-card">
+                    <h3>MedStuder</h3>
+                    <div class="number" id="medstuderStations">0</div>
+                </div>
+                <div class="stat-card">
+                    <h3>Estudadas</h3>
+                    <div class="number" id="studiedStations">0</div>
+                </div>
+            </div>
+
+            <div class="main-content">
+                <div class="sidebar">
+                    <h2>📋 Especialidades</h2>
+                    <div id="specialties"></div>
+
+                    <h2 style="margin-top: 30px;">🔍 Filtros</h2>
+                    <div id="filters"></div>
+                </div>
+
+                <div class="study-area">
+                    <div class="search-box">
+                        <input type="text" id="searchInput" placeholder="🔍 Buscar estação por assunto, especialidade, tema ou ano...">
+                    </div>
+
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progressFill" style="width: 0%"></div>
+                    </div>
+
+                    <div id="stationsGrid" class="stations-grid"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Nova Estação -->
     <div class="modal-overlay" id="modalNovaEstacao">
         <div class="modal-content">
             <h2>➕ Criar Nova Estação</h2>
@@ -985,12 +1026,6 @@ Colecistite aguda
 Hemograma
 PCR
 USG abdome"></textarea>
-                <div class="image-attachment" onclick="document.getElementById('uploadImagem').click()">
-                    📷 Clique para anexar imagem (opcional)
-                    <input type="file" id="uploadImagem" accept="image/*" style="display: none;" onchange="previewImagem(this)">
-                </div>
-                <div id="previewImagemContainer"></div>
-                <input type="hidden" id="imagemBase64">
             </div>
 
             <div class="form-group">
@@ -1030,6 +1065,7 @@ Estabelecer conduta inicial"></textarea>
         </div>
     </div>
 
+    <!-- Flashcard Mode -->
     <div class="flashcard-mode" id="flashcardMode">
         <div class="flashcard-container">
             <div class="flashcard" id="flashcard">
@@ -1057,6 +1093,33 @@ Estabelecer conduta inicial"></textarea>
     </div>
 
     <script>
+        // ========== CONFIGURAÇÃO DO FIREBASE ==========
+        // SUAS CONFIGURAÇÕES DO FIREBASE
+       const firebaseConfig = {
+    apiKey: "AIzaSyDdtsuJoY7c-EvK5YeQ9qCwSg8Zc6_RMw",
+    authDomain: "team-revealida.firebaseapp.com",
+    projectId: "team-revealida",
+    storageBucket: "team-revealida.firebasestorage.app",
+    messagingSenderId: "179954744883",
+    appId: "1:179954744883:web:ce16fbfcd859ee8b14b4d6"
+};
+
+        // Inicializar Firebase
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.firestore();
+
+        // Habilitar persistência offline
+        db.enablePersistence()
+            .catch((err) => {
+                if (err.code == 'failed-precondition') {
+                    console.log("Múltiplas abas abertas - persistência offline limitada");
+                } else if (err.code == 'unimplemented') {
+                    console.log("Navegador não suporta persistência offline");
+                }
+            });
+
+        // ========== VARIÁVEIS GLOBAIS ==========
         let stationsData = [];
         let currentFilter = "all";
         let currentSpecialty = "all";
@@ -1064,8 +1127,359 @@ Estabelecer conduta inicial"></textarea>
         let flashcardDeck = [];
         let currentFlashcardIndex = 0;
         let currentFlashcardPage = 'geral';
-        let imagemTemp = null;
+        let currentUser = null;
+        let syncTimeout = null;
 
+        // ========== FUNÇÕES DE LOGIN ==========
+        function toggleLoginRegister() {
+            const loginForm = document.getElementById('loginForm');
+            const registerForm = document.getElementById('registerForm');
+            const toggleLink = document.getElementById('toggleLoginRegister');
+            
+            if (loginForm.style.display === 'none') {
+                loginForm.style.display = 'block';
+                registerForm.style.display = 'none';
+                toggleLink.textContent = 'Não tem uma conta? Cadastre-se';
+            } else {
+                loginForm.style.display = 'none';
+                registerForm.style.display = 'block';
+                toggleLink.textContent = 'Já tem uma conta? Faça login';
+            }
+        }
+
+        function mostrarErro(mensagem) {
+            const errorDiv = document.getElementById('loginError');
+            errorDiv.textContent = mensagem;
+            errorDiv.style.display = 'block';
+            setTimeout(() => {
+                errorDiv.style.display = 'none';
+            }, 5000);
+        }
+
+        function mostrarSucesso(mensagem) {
+            const successDiv = document.getElementById('loginSuccess');
+            successDiv.textContent = mensagem;
+            successDiv.style.display = 'block';
+            setTimeout(() => {
+                successDiv.style.display = 'none';
+            }, 3000);
+        }
+
+        function showLoading() {
+            document.getElementById('loadingOverlay').classList.add('active');
+        }
+
+        function hideLoading() {
+            document.getElementById('loadingOverlay').classList.remove('active');
+        }
+
+        function updateSyncStatus(status, message) {
+            const syncEl = document.getElementById('syncStatus');
+            syncEl.className = 'sync-status ' + status;
+            if (status === 'syncing') {
+                syncEl.innerHTML = '<i class="fas fa-sync fa-spin"></i><span>Sincronizando...</span>';
+            } else if (status === 'error') {
+                syncEl.innerHTML = '<i class="fas fa-exclamation-triangle"></i><span>' + message + '</span>';
+            } else {
+                syncEl.innerHTML = '<i class="fas fa-cloud-upload-alt"></i><span>' + message + '</span>';
+            }
+        }
+
+        // Verificar conexão
+        window.addEventListener('online', () => {
+            document.getElementById('connectionStatus').className = 'connection-status online';
+            document.getElementById('connectionStatus').innerHTML = '<i class="fas fa-wifi"></i><span>Online</span>';
+        });
+
+        window.addEventListener('offline', () => {
+            document.getElementById('connectionStatus').className = 'connection-status offline';
+            document.getElementById('connectionStatus').innerHTML = '<i class="fas fa-wifi-slash"></i><span>Offline</span>';
+        });
+
+        // ========== FUNÇÕES DO FIREBASE ==========
+        async function carregarDadosDoFirebase() {
+            if (!currentUser) return;
+            
+            try {
+                showLoading();
+                updateSyncStatus('syncing', '');
+                
+                const docRef = db.collection('usuarios').doc(currentUser.uid);
+                const docSnap = await docRef.get();
+                
+                if (docSnap.exists) {
+                    const dados = docSnap.data();
+                    stationsData = dados.stations || [];
+                    console.log('Dados carregados do Firebase:', stationsData.length, 'estações');
+                } else {
+                    // Primeiro acesso - criar documento inicial com exemplo
+                    stationsData = [
+                        {
+                            id: 1,
+                            title: "Dor Abdominal - Apendicite",
+                            specialty: "Cirurgia Geral",
+                            tema: "Abdome Agudo",
+                            year: 2023,
+                            official: true,
+                            studied: false,
+                            instrucoes: {
+                                candidato: "Você está no pronto-socorro. Paciente com dor abdominal há 2 dias.",
+                                ator: "Dor em FID, piora com movimento, sem febre."
+                            },
+                            content: {
+                                geral: "*ANAMNESE*\nDor iniciou em região periumbilical, migrou para FID há 12h. Náuseas, sem vômitos.\n\n*EXAME FÍSICO*\nSinal de Blumberg positivo. Descompressão brusca dolorosa.",
+                                indicacoes: "*INSTRUÇÕES DO CANDIDATO*\nPaciente com dor abdominal há 2 dias. Realize anamnese e exame físico.\n\n*INSTRUÇÕES DO ATOR*\nDor em FID, piora com movimento, sem febre.",
+                                impressos: "*HIPÓTESE*\nApendicite aguda\n\n*EXAMES*\nHemograma\nUSG abdome total",
+                                checklist: "1. ANAMNESE\n(1) Pergunta início da dor\n(2) Pergunta localização\n(3) Pergunta migração\n(4) Pergunta sintomas associados\nAdequado: Pergunta 4 itens\nParcialmente adequado: Pergunta 2-3 itens\nInadequado: Pergunta 0-1 item",
+                                resumo: "*PONTOS-CHAVE*\nDor migratória é clássica\nSinal de Blumberg\nApendicite é a principal hipótese"
+                            }
+                        }
+                    ];
+                    
+                    await docRef.set({ 
+                        stations: stationsData,
+                        email: currentUser.email,
+                        nome: currentUser.displayName || '',
+                        ultimoAcesso: new Date().toISOString()
+                    });
+                }
+                
+                atualizarContadores();
+                renderSpecialties();
+                renderFilters();
+                renderStations();
+                updateSyncStatus('', 'Sincronizado');
+                
+            } catch (error) {
+                console.error('Erro ao carregar dados:', error);
+                updateSyncStatus('error', 'Erro ao sincronizar');
+                mostrarErro('Erro ao carregar dados: ' + error.message);
+            } finally {
+                hideLoading();
+            }
+        }
+
+        async function salvarDadosNoFirebase() {
+            if (!currentUser) return;
+            
+            // Debounce para evitar muitas chamadas
+            if (syncTimeout) clearTimeout(syncTimeout);
+            
+            syncTimeout = setTimeout(async () => {
+                try {
+                    updateSyncStatus('syncing', '');
+                    
+                    await db.collection('usuarios').doc(currentUser.uid).set({
+                        stations: stationsData,
+                        email: currentUser.email,
+                        ultimoAcesso: new Date().toISOString()
+                    }, { merge: true });
+                    
+                    updateSyncStatus('', 'Sincronizado');
+                    
+                } catch (error) {
+                    console.error('Erro ao salvar:', error);
+                    updateSyncStatus('error', 'Erro ao salvar');
+                }
+            }, 500);
+        }
+
+        // ========== FUNÇÕES DE AUTENTICAÇÃO ==========
+        async function fazerLogin() {
+            const email = document.getElementById('loginEmail').value.trim();
+            const senha = document.getElementById('loginPassword').value.trim();
+            
+            if (!email || !senha) {
+                mostrarErro('Preencha email e senha');
+                return;
+            }
+            
+            try {
+                showLoading();
+                const userCredential = await auth.signInWithEmailAndPassword(email, senha);
+                currentUser = userCredential.user;
+                document.getElementById('userEmail').textContent = currentUser.email;
+                await carregarDadosDoFirebase();
+                document.getElementById('loginScreen').style.display = 'none';
+                document.getElementById('mainApp').style.display = 'block';
+            } catch (error) {
+                console.error('Erro no login:', error);
+                let mensagem = 'Erro ao fazer login';
+                if (error.code === 'auth/user-not-found') {
+                    mensagem = 'Usuário não encontrado';
+                } else if (error.code === 'auth/wrong-password') {
+                    mensagem = 'Senha incorreta';
+                } else if (error.code === 'auth/invalid-email') {
+                    mensagem = 'Email inválido';
+                } else if (error.code === 'auth/too-many-requests') {
+                    mensagem = 'Muitas tentativas. Tente novamente mais tarde';
+                }
+                mostrarErro(mensagem);
+            } finally {
+                hideLoading();
+            }
+        }
+
+async function criarConta() {
+    const nome = document.getElementById('registerName').value.trim();
+    const email = document.getElementById('registerEmail').value.trim();
+    const senha = document.getElementById('registerPassword').value.trim();
+    
+    if (!nome || !email || !senha) {
+        mostrarErro('Preencha todos os campos');
+        return;
+    }
+    
+    if (senha.length < 6) {
+        mostrarErro('A senha deve ter pelo menos 6 caracteres');
+        return;
+    }
+    
+    try {
+        showLoading();
+        
+        // 1. Primeiro cria a conta no Authentication
+        const userCredential = await auth.createUserWithEmailAndPassword(email, senha);
+        await userCredential.user.updateProfile({ displayName: nome });
+        
+        currentUser = userCredential.user;
+        document.getElementById('userEmail').textContent = currentUser.email;
+        
+        // 2. Depois tenta salvar no Firestore (mas não trava se falhar)
+        try {
+            const stationsIniciais = [
+                {
+                    id: 1,
+                    title: "Dor Abdominal - Apendicite",
+                    specialty: "Cirurgia Geral",
+                    tema: "Abdome Agudo",
+                    year: 2023,
+                    official: true,
+                    studied: false,
+                    instrucoes: {
+                        candidato: "Você está no pronto-socorro. Paciente com dor abdominal há 2 dias.",
+                        ator: "Dor em FID, piora com movimento, sem febre."
+                    },
+                    content: {
+                        geral: "*ANAMNESE*\nDor iniciou em região periumbilical, migrou para FID há 12h. Náuseas, sem vômitos.\n\n*EXAME FÍSICO*\nSinal de Blumberg positivo. Descompressão brusca dolorosa.",
+                        indicacoes: "*INSTRUÇÕES DO CANDIDATO*\nPaciente com dor abdominal há 2 dias. Realize anamnese e exame físico.\n\n*INSTRUÇÕES DO ATOR*\nDor em FID, piora com movimento, sem febre.",
+                        impressos: "*HIPÓTESE*\nApendicite aguda\n\n*EXAMES*\nHemograma\nUSG abdome total",
+                        checklist: "1. ANAMNESE\n(1) Pergunta início da dor\n(2) Pergunta localização\n(3) Pergunta migração\n(4) Pergunta sintomas associados\nAdequado: Pergunta 4 itens\nParcialmente adequado: Pergunta 2-3 itens\nInadequado: Pergunta 0-1 item",
+                        resumo: "*PONTOS-CHAVE*\nDor migratória é clássica\nSinal de Blumberg\nApendicite é a principal hipótese"
+                    }
+                }
+            ];
+            
+            stationsData = stationsIniciais;
+            
+            await db.collection('usuarios').doc(currentUser.uid).set({
+                stations: stationsIniciais,
+                email: currentUser.email,
+                nome: nome,
+                criadoEm: new Date().toISOString()
+            });
+            
+        } catch (firestoreError) {
+            console.log("Aviso: Não foi possível salvar no Firestore, mas a conta foi criada:", firestoreError);
+            // Mesmo com erro no Firestore, a conta foi criada
+            stationsData = [];
+        }
+        
+        atualizarContadores();
+        renderSpecialties();
+        renderFilters();
+        renderStations();
+        
+        document.getElementById('loginScreen').style.display = 'none';
+        document.getElementById('mainApp').style.display = 'block';
+        mostrarSucesso('Conta criada com sucesso!');
+        
+    } catch (error) {
+        console.error('Erro ao criar conta:', error);
+        let mensagem = 'Erro ao criar conta';
+        if (error.code === 'auth/email-already-in-use') {
+            mensagem = 'Este email já está cadastrado';
+        } else if (error.code === 'auth/invalid-email') {
+            mensagem = 'Email inválido';
+        } else if (error.code === 'auth/weak-password') {
+            mensagem = 'Senha muito fraca';
+        }
+        mostrarErro(mensagem);
+    } finally {
+        hideLoading();
+    }
+}
+       async function loginComGoogle() {
+    try {
+        showLoading();
+        const provider = new firebase.auth.GoogleAuthProvider();
+        const userCredential = await auth.signInWithPopup(provider);
+        currentUser = userCredential.user;
+        document.getElementById('userEmail').textContent = currentUser.email;
+        
+        // Tenta carregar dados do Firestore
+        try {
+            await carregarDadosDoFirebase();
+        } catch (e) {
+            console.log("Aviso: Erro ao carregar dados do Firestore");
+            stationsData = [];
+        }
+        
+        document.getElementById('loginScreen').style.display = 'none';
+        document.getElementById('mainApp').style.display = 'block';
+    } catch (error) {
+        console.error('Erro no Google:', error);
+        mostrarErro('Erro ao fazer login com Google');
+    } finally {
+        hideLoading();
+    }
+}
+        async function recuperarSenha() {
+            const email = prompt('Digite seu email para recuperar a senha:');
+            if (!email) return;
+            
+            try {
+                showLoading();
+                await auth.sendPasswordResetEmail(email);
+                mostrarSucesso('Email de recuperação enviado! Verifique sua caixa de entrada.');
+            } catch (error) {
+                console.error('Erro ao recuperar senha:', error);
+                mostrarErro('Erro ao enviar email de recuperação');
+            } finally {
+                hideLoading();
+            }
+        }
+
+        async function fazerLogout() {
+            try {
+                await auth.signOut();
+                currentUser = null;
+                stationsData = [];
+                document.getElementById('loginScreen').style.display = 'flex';
+                document.getElementById('mainApp').style.display = 'none';
+                document.getElementById('loginEmail').value = '';
+                document.getElementById('loginPassword').value = '';
+            } catch (error) {
+                console.error('Erro ao sair:', error);
+                mostrarErro('Erro ao fazer logout');
+            }
+        }
+
+        // ========== VERIFICAR ESTADO DO USUÁRIO ==========
+        auth.onAuthStateChanged(async (user) => {
+            if (user) {
+                currentUser = user;
+                document.getElementById('userEmail').textContent = user.email;
+                await carregarDadosDoFirebase();
+                document.getElementById('loginScreen').style.display = 'none';
+                document.getElementById('mainApp').style.display = 'block';
+            } else {
+                document.getElementById('loginScreen').style.display = 'flex';
+                document.getElementById('mainApp').style.display = 'none';
+            }
+        });
+
+        // ========== FUNÇÕES DO APP (do seu código original) ==========
         function escaparHTML(str) {
             return String(str || '')
                 .replace(/&/g, '&amp;')
@@ -1345,169 +1759,32 @@ Estabelecer conduta inicial"></textarea>
                 <div class="info-header">
                     <div class="info-linha">
                         <span class="info-label">Nome:</span>
-                        <span class="info-valor" id="edit-nome">${escaparHTML(station.title || '')}</span>
-                        <i class="fas fa-pencil-alt edit-icon" onclick="iniciarEdicao('title', '${String(station.title || '').replace(/'/g, "\\'")}')"></i>
+                        <span class="info-valor">${escaparHTML(station.title || '')}</span>
                     </div>
                     <div class="info-linha">
                         <span class="info-label">Área:</span>
-                        <span class="info-valor" id="edit-area">${escaparHTML(station.specialty || '')}</span>
-                        <i class="fas fa-pencil-alt edit-icon" onclick="iniciarEdicao('specialty', '${String(station.specialty || '').replace(/'/g, "\\'")}')"></i>
+                        <span class="info-valor">${escaparHTML(station.specialty || '')}</span>
                     </div>
                     <div class="info-linha">
                         <span class="info-label">Tema:</span>
-                        <span class="info-valor" id="edit-tema">${escaparHTML(station.tema || 'Não definido')}</span>
-                        <i class="fas fa-pencil-alt edit-icon" onclick="iniciarEdicao('tema', '${String(station.tema || '').replace(/'/g, "\\'")}')"></i>
+                        <span class="info-valor">${escaparHTML(station.tema || 'Não definido')}</span>
                     </div>
                     <div class="info-linha">
                         <span class="info-label">Revalida:</span>
-                        <span class="info-valor" id="edit-ano">${escaparHTML(station.year || '')}</span>
-                        <i class="fas fa-pencil-alt edit-icon" onclick="iniciarEdicao('year', '${station.year || ''}')"></i>
+                        <span class="info-valor">${escaparHTML(station.year || '')}</span>
                     </div>
                 </div>
             `;
         }
 
-        function obterIdCampoEdicao(campo) {
-            if (campo === 'title') return 'edit-nome';
-            if (campo === 'specialty') return 'edit-area';
-            if (campo === 'tema') return 'edit-tema';
-            if (campo === 'year') return 'edit-ano';
-            return '';
-        }
-
-        function iniciarEdicao(campo, valorAtual) {
-            const elemento = document.getElementById(obterIdCampoEdicao(campo));
-            if (!elemento) return;
-
-            const input = document.createElement('input');
-            input.type = campo === 'year' ? 'number' : 'text';
-            input.value = valorAtual;
-            input.className = 'edit-input';
-
-            elemento.innerHTML = '';
-            elemento.appendChild(input);
-            elemento.classList.add('editando');
-            input.focus();
-
-            input.onblur = function() {
-                salvarEdicao(campo, input.value, elemento);
-            };
-
-            input.onkeypress = function(e) {
-                if (e.key === 'Enter') {
-                    input.blur();
-                }
-            };
-        }
-
-        function salvarEdicao(campo, novoValor, elemento) {
-            const estacao = flashcardDeck[currentFlashcardIndex];
-            if (!estacao) return;
-
-            if (campo === 'title') {
-                estacao.title = novoValor.trim();
-            } else if (campo === 'specialty') {
-                estacao.specialty = novoValor.trim();
-            } else if (campo === 'tema') {
-                estacao.tema = novoValor.trim();
-            } else if (campo === 'year') {
-                estacao.year = parseInt(novoValor) || estacao.year;
-            }
-
-            const index = stationsData.findIndex(s => s.id === estacao.id);
-            if (index !== -1) {
-                stationsData[index] = estacao;
-            }
-
-            salvarDados();
-            renderSpecialties();
-            renderFilters();
-            renderStations();
-
-            elemento.innerHTML = escaparHTML(campo === 'year' ? estacao.year : novoValor);
-            elemento.classList.remove('editando');
-        }
-
-        function previewImagem(input) {
-            if (input.files && input.files[0]) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    imagemTemp = e.target.result;
-                    document.getElementById('previewImagemContainer').innerHTML =
-                        `<img src="${e.target.result}" class="image-preview" alt="Preview">`;
-                    document.getElementById('imagemBase64').value = e.target.result;
-                };
-                reader.readAsDataURL(input.files[0]);
-            }
-        }
-
-        function carregarDados() {
-            try {
-                const dadosSalvos = localStorage.getItem('revalidaStations');
-                if (dadosSalvos) {
-                    stationsData = JSON.parse(dadosSalvos);
-                } else {
-                    stationsData = [
-                        {
-                            id: 1,
-                            title: "Dor Abdominal - Caso Clínico",
-                            specialty: "Clínica Médica",
-                            tema: "Gastroenterologia",
-                            year: 2023,
-                            source: "inep",
-                            official: true,
-                            studied: false,
-                            instrucoes: {
-                                candidato: "Você está no ambulatório. Paciente feminina, 32 anos, queixa-se de dor abdominal há 3 dias.",
-                                ator: "Você é a paciente. Dor em andar superior do abdome, tipo queimação, pós-prandial."
-                            },
-                            content: {
-                                geral: "*HISTÓRIA DA DOENÇA ATUAL*\nPaciente relata dor abdominal iniciada há 3 dias.\n\n*ANTECEDENTES PESSOAIS*\nNega comorbidades. Nega cirurgias prévias.",
-                                indicacoes: "*INSTRUÇÕES DO CANDIDATO*\nVocê está no ambulatório. Paciente feminina, 32 anos, queixa-se de dor abdominal há 3 dias.\n\n*INSTRUÇÕES DO ATOR*\nVocê é a paciente. Dor em andar superior do abdome, tipo queimação, pós-prandial.",
-                                impressos: "*HIPÓTESE DIAGNÓSTICA*\nDoença do refluxo gastroesofágico\n\n*EXAMES SOLICITADOS*\nEndoscopia digestiva alta",
-                                checklist: "1. ACOLHIMENTO INICIAL\n(1) Apresenta-se à paciente.\n(2) Cumprimenta a paciente.\n(3) Pergunta o nome e a idade da paciente.\nAdequado: Realiza os 3 itens.\nParcialmente adequado: Realiza 2 itens.\nInadequado: Realiza 1 ou nenhum item.\n\n2. CARACTERIZAÇÃO DA DOR ABDOMINAL\nInvestiga ao menos 4 dos seguintes aspectos.\n(1) Início\n(2) Localização\n(3) Irradiação\n(4) Intensidade\n(5) Fatores de melhora ou piora\nAdequado: Investiga 4 ou 5 aspectos.\nParcialmente adequado: Investiga 2 ou 3 aspectos.\nInadequado: Investiga 0 ou 1 aspecto.",
-                                resumo: "*PONTOS-CHAVE*\nCaracterizar bem a dor\nInvestigar sintomas de alarme\nConsiderar hipóteses diferenciais"
-                            },
-                            imagem: null
-                        }
-                    ];
-                }
-
-                atualizarContadores();
-                renderSpecialties();
-                renderFilters();
-                renderStations();
-            } catch (e) {
-                console.error("Erro ao carregar dados:", e);
-                stationsData = [];
-                atualizarContadores();
-                renderSpecialties();
-                renderFilters();
-                renderStations();
-            }
-        }
-
-        function salvarDados() {
-            try {
-                localStorage.setItem('revalidaStations', JSON.stringify(stationsData));
-                atualizarContadores();
-            } catch (e) {
-                console.error("Erro ao salvar dados:", e);
-            }
-        }
-
         function atualizarContadores() {
             document.getElementById('totalStations').textContent = stationsData.length;
-
             const oficial = stationsData.filter(s => s.official).length;
             document.getElementById('officialStations').textContent = oficial;
-
             const medstuder = stationsData.filter(s => !s.official).length;
             document.getElementById('medstuderStations').textContent = medstuder;
-
             const estudadas = stationsData.filter(s => s.studied).length;
             document.getElementById('studiedStations').textContent = estudadas;
-
             const progresso = stationsData.length > 0 ? (estudadas / stationsData.length) * 100 : 0;
             document.getElementById('progressFill').style.width = progresso + '%';
         }
@@ -1516,9 +1793,8 @@ Estabelecer conduta inicial"></textarea>
             const station = stationsData.find(s => s.id === id);
             if (station) {
                 station.studied = !station.studied;
-                salvarDados();
+                salvarDadosNoFirebase();
                 renderStations();
-
                 if (document.getElementById('flashcardMode').classList.contains('active')) {
                     mostrarPaginaFlashcard(currentFlashcardPage);
                 }
@@ -1528,7 +1804,7 @@ Estabelecer conduta inicial"></textarea>
         function deleteStation(id) {
             if (confirm('Tem certeza que deseja excluir esta estação?')) {
                 stationsData = stationsData.filter(s => s.id !== id);
-                salvarDados();
+                salvarDadosNoFirebase();
                 renderSpecialties();
                 renderFilters();
                 renderStations();
@@ -1670,9 +1946,6 @@ Estabelecer conduta inicial"></textarea>
             document.getElementById('novoImpressao').value = '';
             document.getElementById('novoChecklist').value = '';
             document.getElementById('novoResumo').value = '';
-            document.getElementById('previewImagemContainer').innerHTML = '';
-            document.getElementById('imagemBase64').value = '';
-            imagemTemp = null;
         }
 
         function fecharModalNovaEstacao() {
@@ -1711,12 +1984,11 @@ Estabelecer conduta inicial"></textarea>
                     impressos: document.getElementById('novoImpressao').value.trim(),
                     checklist: document.getElementById('novoChecklist').value.trim(),
                     resumo: document.getElementById('novoResumo').value.trim()
-                },
-                imagem: document.getElementById('imagemBase64').value || null
+                }
             };
 
             stationsData.push(novaEstacao);
-            salvarDados();
+            salvarDadosNoFirebase();
             renderSpecialties();
             renderFilters();
             renderStations();
@@ -1785,9 +2057,6 @@ Estabelecer conduta inicial"></textarea>
                 conteudo = formatarTextoComTopicos(station.content?.indicacoes || '');
             } else if (pagina === 'impressos') {
                 conteudo = formatarImpressosColapsaveis(station.content?.impressos || '');
-                if (station.imagem) {
-                    conteudo += `<div style="margin-top:20px; text-align:center;"><img src="${station.imagem}" class="image-preview" style="max-width:100%; max-height:300px;" alt="Imagem da estação"></div>`;
-                }
             } else if (pagina === 'checklist') {
                 conteudo = formatarChecklistComoTabela(station.content?.checklist || '');
             } else if (pagina === 'resumo') {
@@ -1865,8 +2134,6 @@ Estabelecer conduta inicial"></textarea>
                 }
             }
         });
-
-        carregarDados();
     </script>
 </body>
 </html>
