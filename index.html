@@ -3,14 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RevalidaMed Pro - App de Estudo Online</title>
+    <title>RevalidaMed - Versão Local</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    
-    <!-- Firebase SDK -->
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
-    
     <style>
         * {
             margin: 0;
@@ -22,445 +16,592 @@
         body {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
-        }
-
-        /* Tela de Login */
-        #loginScreen {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
             padding: 20px;
         }
 
-        .login-container {
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        header {
             background: white;
-            padding: 40px;
-            border-radius: 20px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-            width: 100%;
-            max-width: 450px;
-            animation: slideUp 0.5s ease;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
 
-        @keyframes slideUp {
-            from {
-                opacity: 0;
-                transform: translateY(30px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+        h1 {
+            color: #2d3748;
+            margin-bottom: 10px;
+            font-size: 2.2em;
         }
 
-        .login-header {
-            text-align: center;
-            margin-bottom: 30px;
-        }
-
-        .login-header h1 {
+        h1 span {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
-            font-size: 2.2em;
-            margin-bottom: 10px;
         }
 
-        .login-header p {
-            color: #718096;
-            font-size: 1.1em;
-        }
-
-        .login-container input {
-            width: 100%;
-            padding: 15px;
-            margin: 10px 0;
-            border: 2px solid #e0e0e0;
-            border-radius: 10px;
-            font-size: 16px;
-            transition: 0.3s;
-        }
-
-        .login-container input:focus {
-            border-color: #667eea;
-            outline: none;
-            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
-        }
-
-        .login-container button {
-            width: 100%;
-            padding: 15px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        .btn-novo {
+            background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
             color: white;
             border: none;
-            border-radius: 10px;
-            font-size: 18px;
-            font-weight: bold;
+            padding: 15px 30px;
+            border-radius: 50px;
+            font-size: 1.05em;
+            font-weight: 600;
             cursor: pointer;
-            margin: 10px 0;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 4px 15px rgba(72, 187, 120, 0.4);
+        }
+
+        .btn-novo:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(72, 187, 120, 0.6);
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #f6f9fc 0%, #e6f0f5 100%);
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .stat-card h3 {
+            color: #4a5568;
+            font-size: 1em;
+            margin-bottom: 5px;
+        }
+
+        .stat-card .number {
+            font-size: 2em;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            gap: 20px;
+        }
+
+        .sidebar {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            height: fit-content;
+        }
+
+        .sidebar h2 {
+            color: #2d3748;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #e2e8f0;
+        }
+
+        .menu-item {
+            padding: 12px 15px;
+            margin: 5px 0;
+            background: #f7fafc;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 500;
+            color: #4a5568;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .menu-item:hover {
+            background: #667eea;
+            color: white;
+            transform: translateX(5px);
+        }
+
+        .menu-item.active {
+            background: #667eea;
+            color: white;
+            box-shadow: 0 4px 10px rgba(102, 126, 234, 0.4);
+        }
+
+        .menu-item .count {
+            background: rgba(255,255,255,0.2);
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 0.9em;
+        }
+
+        .study-area {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .search-box {
+            margin-bottom: 20px;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            font-size: 1.1em;
             transition: all 0.3s;
         }
 
-        .login-container button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+        .search-box input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
         }
 
-        .login-container button.google-btn {
-            background: #db4437;
-            margin-top: 5px;
+        .stations-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+            max-height: 650px;
+            overflow-y: auto;
+            padding: 10px;
         }
 
-        .login-container button.google-btn:hover {
-            background: #c53929;
-        }
-
-        .login-footer {
-            text-align: center;
-            margin-top: 20px;
-        }
-
-        .login-footer a {
-            color: #667eea;
-            text-decoration: none;
-            font-weight: 600;
+        .station-card {
+            background: #f7fafc;
+            border-radius: 12px;
+            padding: 20px;
             cursor: pointer;
+            transition: all 0.3s;
+            border: 2px solid transparent;
+            position: relative;
         }
 
-        .login-footer a:hover {
-            text-decoration: underline;
+        .station-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+            border-color: #667eea;
         }
 
-        .divider {
+        .station-card.studied {
+            background: linear-gradient(135deg, #e6f7ff 0%, #bae7ff 100%);
+            border-color: #1890ff;
+        }
+
+        .station-card h3 {
+            color: #2d3748;
+            margin-bottom: 10px;
+            font-size: 1.15em;
+        }
+
+        .station-meta {
             display: flex;
-            align-items: center;
-            text-align: center;
-            color: #a0aec0;
-            margin: 20px 0;
+            gap: 10px;
+            margin: 10px 0;
+            font-size: 0.9em;
+            flex-wrap: wrap;
         }
 
-        .divider::before,
-        .divider::after {
-            content: '';
+        .badge {
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 0.8em;
+        }
+
+        .badge.inep {
+            background: #ffd700;
+            color: #000;
+        }
+
+        .badge.medstuder {
+            background: #87d068;
+            color: white;
+        }
+
+        .badge.specialty {
+            background: #667eea;
+            color: white;
+        }
+
+        .study-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 8px 14px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
             flex: 1;
-            border-bottom: 1px solid #e2e8f0;
+            font-size: 0.9em;
         }
 
-        .divider span {
-            padding: 0 10px;
+        .btn-study {
+            background: #52c41a;
+            color: white;
         }
 
-        .error-message {
-            background: #fed7d7;
-            color: #c53030;
-            padding: 10px;
-            border-radius: 8px;
-            margin: 10px 0;
-            display: none;
+        .btn-study:hover {
+            background: #389e0d;
         }
 
-        .success-message {
-            background: #c6f6d5;
-            color: #22543d;
-            padding: 10px;
-            border-radius: 8px;
-            margin: 10px 0;
-            display: none;
+        .btn-flashcard {
+            background: #722ed1;
+            color: white;
         }
 
-        /* Loading Overlay */
-        .loading-overlay {
+        .btn-flashcard:hover {
+            background: #531dab;
+        }
+
+        .btn-delete {
+            background: #f56565;
+            color: white;
+        }
+
+        .btn-delete:hover {
+            background: #c53030;
+        }
+
+        .modal-overlay {
             position: fixed;
             top: 0;
             left: 0;
             right: 0;
             bottom: 0;
-            background: rgba(255,255,255,0.9);
+            background: rgba(0, 0, 0, 0.8);
             display: none;
             justify-content: center;
             align-items: center;
-            z-index: 3000;
+            z-index: 2000;
         }
 
-        .loading-overlay.active {
+        .modal-overlay.active {
             display: flex;
         }
 
-        .spinner {
-            width: 50px;
-            height: 50px;
-            border: 5px solid #e2e8f0;
-            border-top-color: #667eea;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-        }
-
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-
-        /* App Principal */
-        #mainApp {
-            display: none;
-            padding: 20px;
-        }
-
-        .app-header {
+        .modal-content {
             background: white;
-            border-radius: 15px;
-            padding: 20px;
+            border-radius: 20px;
+            padding: 30px;
+            width: 90%;
+            max-width: 900px;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-content h2 {
+            color: #2d3748;
             margin-bottom: 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            padding-bottom: 10px;
+            border-bottom: 3px solid #667eea;
         }
 
-        .app-header h1 {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            font-size: 1.8em;
+        .form-group {
+            margin-bottom: 20px;
         }
 
-        .user-info {
-            display: flex;
-            align-items: center;
-            gap: 20px;
-        }
-
-        .user-email {
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
             color: #4a5568;
-            font-weight: 500;
         }
 
-        .logout-btn {
-            background: #f56565;
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 1em;
+            transition: all 0.3s;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .form-group textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        .instrucoes-fixas {
+            background: #f0f5ff;
+            border-left: 4px solid #667eea;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+        }
+
+        .instrucoes-fixas h4 {
+            color: #2d3748;
+            margin-bottom: 10px;
+            font-size: 1.05em;
+        }
+
+        .instrucao-campo {
+            margin-bottom: 15px;
+        }
+
+        .instrucao-campo label {
+            font-weight: 600;
+            color: #4a5568;
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .instrucao-campo textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #cbd5e0;
+            border-radius: 6px;
+            min-height: 80px;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 30px;
+            flex-wrap: wrap;
+        }
+
+        .btn-primary {
+            background: #667eea;
             color: white;
             border: none;
-            padding: 10px 20px;
+            padding: 12px 24px;
             border-radius: 8px;
-            cursor: pointer;
             font-weight: 600;
-            transition: 0.3s;
+            cursor: pointer;
+            transition: all 0.3s;
+            flex: 1;
         }
 
-        .logout-btn:hover {
-            background: #c53030;
+        .btn-primary:hover {
+            background: #5a67d8;
         }
 
-        .sync-status {
-            display: flex;
-            align-items: center;
-            gap: 5px;
-            color: #48bb78;
-            font-size: 0.9em;
+        .btn-secondary {
+            background: #a0aec0;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            flex: 1;
         }
 
-        .sync-status.syncing {
-            color: #ed8936;
+        .btn-secondary:hover {
+            background: #718096;
         }
 
-        .sync-status.error {
-            color: #f56565;
-        }
-
-        /* Mantém todo o CSS do seu código original aqui */
-        /* ... (todo o CSS que você já tinha) ... */
-        
-        /* Adicione estes estilos extras */
-        .connection-status {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            background: white;
-            padding: 10px 20px;
-            border-radius: 30px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        .checkbox-group {
             display: flex;
             align-items: center;
             gap: 10px;
-            z-index: 100;
-            font-size: 0.9em;
         }
 
-        .connection-status.online {
-            border-left: 4px solid #48bb78;
+        .checkbox-group input {
+            width: auto;
         }
 
-        .connection-status.offline {
-            border-left: 4px solid #f56565;
+        .flashcard-mode {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.95);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
         }
 
-        .connection-status i {
-            font-size: 1.2em;
+        .flashcard-mode.active {
+            display: flex;
         }
 
-        .connection-status.online i {
-            color: #48bb78;
+        .flashcard-container {
+            width: 90%;
+            max-width: 1200px;
+            max-height: 90vh;
         }
 
-        .connection-status.offline i {
-            color: #f56565;
+        .flashcard {
+            background: white;
+            border-radius: 30px;
+            padding: 30px;
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.3);
+            max-height: 80vh;
+            overflow-y: auto;
         }
 
-        /* Ajustes para responsividade */
+        .flashcard-pages {
+            display: flex;
+            gap: 10px;
+            margin: 20px 0;
+            border-bottom: 2px solid #e2e8f0;
+            padding-bottom: 15px;
+            flex-wrap: wrap;
+        }
+
+        .page-tab {
+            padding: 10px 20px;
+            background: #edf2f7;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+            user-select: none;
+        }
+
+        .page-tab:hover {
+            background: #667eea;
+            color: white;
+        }
+
+        .page-tab.active {
+            background: #667eea;
+            color: white;
+        }
+
+        .page-content {
+            min-height: 300px;
+            line-height: 1.8;
+            padding: 10px;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 10px;
+            background: #e2e8f0;
+            border-radius: 5px;
+            margin: 20px 0;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #52c41a, #1890ff);
+            transition: width 0.3s;
+        }
+
         @media (max-width: 768px) {
-            .app-header {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+
+            header {
                 flex-direction: column;
                 gap: 15px;
-                text-align: center;
             }
-            
-            .user-info {
-                flex-direction: column;
-                width: 100%;
-            }
-            
-            .logout-btn {
-                width: 100%;
+
+            .flashcard-pages {
+                justify-content: center;
             }
         }
     </style>
 </head>
 <body>
-    <!-- Loading Overlay -->
-    <div class="loading-overlay" id="loadingOverlay">
-        <div class="spinner"></div>
-    </div>
+    <div class="container">
+        <header>
+            <div>
+                <h1>📚 <span>RevalidaMed</span> - Versão Local</h1>
+            </div>
+            <button class="btn-novo" onclick="abrirModalNovaEstacao()">
+                <span style="font-size: 1.5em;">➕</span> Nova Estação
+            </button>
+        </header>
 
-    <!-- Tela de Login -->
-    <div id="loginScreen">
-        <div class="login-container">
-            <div class="login-header">
-                <h1>🏥 RevalidaMed Pro</h1>
-                <p>Faça login para acessar seus estudos</p>
+        <div class="stats">
+            <div class="stat-card">
+                <h3>Total de Estações</h3>
+                <div class="number" id="totalStations">0</div>
+            </div>
+            <div class="stat-card">
+                <h3>Oficiais INEP</h3>
+                <div class="number" id="officialStations">0</div>
+            </div>
+            <div class="stat-card">
+                <h3>MedStuder</h3>
+                <div class="number" id="medstuderStations">0</div>
+            </div>
+            <div class="stat-card">
+                <h3>Estudadas</h3>
+                <div class="number" id="studiedStations">0</div>
+            </div>
+        </div>
+
+        <div class="main-content">
+            <div class="sidebar">
+                <h2>📋 Especialidades</h2>
+                <div id="specialties"></div>
+
+                <h2 style="margin-top: 30px;">🔍 Filtros</h2>
+                <div id="filters"></div>
             </div>
 
-            <div class="error-message" id="loginError"></div>
-            <div class="success-message" id="loginSuccess"></div>
-
-            <div id="loginForm">
-                <input type="email" id="loginEmail" placeholder="Seu email" autocomplete="email">
-                <input type="password" id="loginPassword" placeholder="Sua senha" autocomplete="current-password">
-                <button onclick="fazerLogin()">Entrar</button>
-                
-                <div class="divider">
-                    <span>ou</span>
+            <div class="study-area">
+                <div class="search-box">
+                    <input type="text" id="searchInput" placeholder="🔍 Buscar estação por assunto, especialidade, tema ou ano...">
                 </div>
-                
-                <button class="google-btn" onclick="loginComGoogle()">
-                    <i class="fab fa-google"></i> Continuar com Google
-                </button>
-            </div>
 
-            <div id="registerForm" style="display: none;">
-                <input type="text" id="registerName" placeholder="Seu nome">
-                <input type="email" id="registerEmail" placeholder="Seu email">
-                <input type="password" id="registerPassword" placeholder="Crie uma senha (mínimo 6 caracteres)">
-                <button onclick="criarConta()">Criar Conta</button>
-                <button class="google-btn" onclick="loginComGoogle()">
-                    <i class="fab fa-google"></i> Continuar com Google
-                </button>
-            </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill" style="width: 0%"></div>
+                </div>
 
-            <div class="login-footer">
-                <a href="#" onclick="toggleLoginRegister()" id="toggleLoginRegister">Não tem uma conta? Cadastre-se</a>
-                <br>
-                <a href="#" onclick="recuperarSenha()" style="font-size: 0.9em;">Esqueceu sua senha?</a>
+                <div id="stationsGrid" class="stations-grid"></div>
             </div>
         </div>
     </div>
 
-    <!-- App Principal -->
-    <div id="mainApp">
-        <div class="app-header">
-            <h1>📚 RevalidaMed - Estações Clínicas</h1>
-            <div class="user-info">
-                <span class="user-email" id="userEmail"></span>
-                <div class="sync-status" id="syncStatus">
-                    <i class="fas fa-cloud-upload-alt"></i>
-                    <span>Sincronizado</span>
-                </div>
-                <button class="logout-btn" onclick="fazerLogout()">Sair</button>
-            </div>
-        </div>
+    <div class="modal-overlay" id="modalNovaEstacao">
+        <div class="modal-content">
+            <h2>➕ Criar Nova Estação</h2>
 
-        <!-- Connection Status -->
-        <div class="connection-status online" id="connectionStatus">
-            <i class="fas fa-wifi"></i>
-            <span>Online</span>
-        </div>
-
-        <!-- Aqui vai TODO o conteúdo do seu app original -->
-        <div class="container" style="max-width: 1400px; margin: 0 auto;">
-            <header style="background: white; border-radius: 15px; padding: 20px; margin-bottom: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); display: flex; justify-content: space-between; align-items: center;">
-                <div>
-                    <h1 style="color: #2d3748; margin-bottom: 10px; font-size: 2.2em;">📚 <span style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">RevalidaMed</span> - Flashcards das Estações</h1>
-                </div>
-                <button class="btn-novo" onclick="abrirModalNovaEstacao()">
-                    <span style="font-size: 1.5em;">➕</span> Nova Estação
-                </button>
-            </header>
-
-            <div class="stats" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; margin-bottom: 20px;">
-                <div class="stat-card" style="background: linear-gradient(135deg, #f6f9fc 0%, #e6f0f5 100%); padding: 15px; border-radius: 10px; text-align: center; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
-                    <h3 style="color: #4a5568; font-size: 1em; margin-bottom: 5px;">Total de Estações</h3>
-                    <div class="number" style="font-size: 2em; font-weight: bold; color: #667eea;" id="totalStations">0</div>
-                </div>
-                <div class="stat-card" style="background: linear-gradient(135deg, #f6f9fc 0%, #e6f0f5 100%); padding: 15px; border-radius: 10px; text-align: center; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
-                    <h3 style="color: #4a5568; font-size: 1em; margin-bottom: 5px;">Oficiais INEP</h3>
-                    <div class="number" style="font-size: 2em; font-weight: bold; color: #667eea;" id="officialStations">0</div>
-                </div>
-                <div class="stat-card" style="background: linear-gradient(135deg, #f6f9fc 0%, #e6f0f5 100%); padding: 15px; border-radius: 10px; text-align: center; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
-                    <h3 style="color: #4a5568; font-size: 1em; margin-bottom: 5px;">MedStuder</h3>
-                    <div class="number" style="font-size: 2em; font-weight: bold; color: #667eea;" id="medstuderStations">0</div>
-                </div>
-                <div class="stat-card" style="background: linear-gradient(135deg, #f6f9fc 0%, #e6f0f5 100%); padding: 15px; border-radius: 10px; text-align: center; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
-                    <h3 style="color: #4a5568; font-size: 1em; margin-bottom: 5px;">Estudadas</h3>
-                    <div class="number" style="font-size: 2em; font-weight: bold; color: #667eea;" id="studiedStations">0</div>
-                </div>
+            <div class="form-group">
+                <label>Nome da Estação:</label>
+                <input type="text" id="novoTitulo" placeholder="Ex: Dor abdominal aguda">
             </div>
 
-            <!-- Resto do seu conteúdo original -->
-            <div class="main-content" style="display: grid; grid-template-columns: 300px 1fr; gap: 20px;">
-                <div class="sidebar" style="background: white; border-radius: 15px; padding: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); height: fit-content;">
-                    <h2 style="color: #2d3748; margin-bottom: 15px; padding-bottom: 10px; border-bottom: 2px solid #e2e8f0;">📋 Especialidades</h2>
-                    <div id="specialties"></div>
-
-                    <h2 style="margin-top: 30px; color: #2d3748; margin-bottom: 15px; padding-bottom: 10px; border-bottom: 2px solid #e2e8f0;">🔍 Filtros</h2>
-                    <div id="filters"></div>
-                </div>
-
-                <div class="study-area" style="background: white; border-radius: 15px; padding: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.2);">
-                    <div class="search-box" style="margin-bottom: 20px;">
-                        <input type="text" id="searchInput" placeholder="🔍 Buscar estação por assunto, especialidade, tema ou ano..." style="width: 100%; padding: 15px; border: 2px solid #e2e8f0; border-radius: 10px; font-size: 1.1em;">
-                    </div>
-
-                    <div class="progress-bar" style="width: 100%; height: 10px; background: #e2e8f0; border-radius: 5px; margin: 20px 0; overflow: hidden;">
-                        <div class="progress-fill" id="progressFill" style="height: 100%; background: linear-gradient(90deg, #52c41a, #1890ff); width: 0%;"></div>
-                    </div>
-
-                    <div id="stationsGrid" class="stations-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; max-height: 650px; overflow-y: auto; padding: 10px;"></div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Modais (copiados do seu código) -->
-    <div class="modal-overlay" id="modalNovaEstacao" style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.8); display: none; justify-content: center; align-items: center; z-index: 2000;">
-        <div class="modal-content" style="background: white; border-radius: 20px; padding: 30px; width: 90%; max-width: 900px; max-height: 90vh; overflow-y: auto;">
-            <h2 style="color: #2d3748; margin-bottom: 20px; padding-bottom: 10px; border-bottom: 3px solid #667eea;">➕ Criar Nova Estação</h2>
-
-            <div class="form-group" style="margin-bottom: 20px;">
-                <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #4a5568;">Nome da Estação:</label>
-                <input type="text" id="novoTitulo" placeholder="Ex: Dor abdominal aguda" style="width: 100%; padding: 12px; border: 2px solid #e2e8f0; border-radius: 8px;">
-            </div>
-
-            <div class="form-group" style="margin-bottom: 20px;">
-                <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #4a5568;">Área:</label>
-                <select id="novaEspecialidade" style="width: 100%; padding: 12px; border: 2px solid #e2e8f0; border-radius: 8px;">
+            <div class="form-group">
+                <label>Área:</label>
+                <select id="novaEspecialidade">
                     <option value="Pediatria">Pediatria</option>
                     <option value="Clínica Médica">Clínica Médica</option>
                     <option value="Cirurgia Geral">Cirurgia Geral</option>
@@ -469,64 +610,58 @@
                 </select>
             </div>
 
-            <div class="form-group" style="margin-bottom: 20px;">
-                <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #4a5568;">Tema:</label>
-                <input type="text" id="novoTema" placeholder="Ex: Urgência e Emergência" style="width: 100%; padding: 12px; border: 2px solid #e2e8f0; border-radius: 8px;">
+            <div class="form-group">
+                <label>Tema:</label>
+                <input type="text" id="novoTema" placeholder="Ex: Urgência e Emergência">
             </div>
 
-            <div class="form-group" style="margin-bottom: 20px;">
-                <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #4a5568;">Ano do Revalida:</label>
-                <input type="number" id="novoAno" value="2024" min="2010" max="2035" style="width: 100%; padding: 12px; border: 2px solid #e2e8f0; border-radius: 8px;">
+            <div class="form-group">
+                <label>Ano do Revalida:</label>
+                <input type="number" id="novoAno" value="2024" min="2010" max="2035">
             </div>
 
-            <div class="form-group checkbox-group" style="margin-bottom: 20px; display: flex; align-items: center; gap: 10px;">
-                <input type="checkbox" id="novaFonteInep" checked style="width: auto;">
-                <label style="font-weight: 600; color: #4a5568;">Estação Oficial INEP</label>
+            <div class="form-group checkbox-group">
+                <input type="checkbox" id="novaFonteInep" checked>
+                <label>Estação Oficial INEP</label>
             </div>
 
-            <div class="instrucoes-fixas" style="background: #f0f5ff; border-left: 4px solid #667eea; padding: 15px; margin-bottom: 20px; border-radius: 8px;">
-                <h4 style="color: #2d3748; margin-bottom: 10px;">📋 INSTRUÇÕES (serão salvas na aba INDICAÇÕES)</h4>
+            <div class="instrucoes-fixas">
+                <h4>📋 INSTRUÇÕES (serão salvas na aba INDICAÇÕES)</h4>
 
-                <div class="instrucao-campo" style="margin-bottom: 15px;">
-                    <label style="font-weight: 600; color: #4a5568; display: block; margin-bottom: 5px;">*INSTRUÇÕES DO CANDIDATO*</label>
-                    <textarea id="instrucoesCandidato" placeholder="Digite as instruções para o candidato..." style="width: 100%; padding: 10px; border: 1px solid #cbd5e0; border-radius: 6px; min-height: 80px;">Você está de plantão no pronto-socorro. Realize anamnese e exame físico completo.</textarea>
+                <div class="instrucao-campo">
+                    <label>*INSTRUÇÕES DO CANDIDATO*</label>
+                    <textarea id="instrucoesCandidato" placeholder="Digite as instruções para o candidato...">Você está de plantão no pronto-socorro. Realize anamnese e exame físico completo.</textarea>
                 </div>
 
-                <div class="instrucao-campo" style="margin-bottom: 15px;">
-                    <label style="font-weight: 600; color: #4a5568; display: block; margin-bottom: 5px;">*INSTRUÇÕES DO ATOR*</label>
-                    <textarea id="instrucoesAtor" placeholder="Digite as instruções para o ator..." style="width: 100%; padding: 10px; border: 1px solid #cbd5e0; border-radius: 6px; min-height: 80px;">Você é a mãe/paciente. Responda apenas o que for perguntado.</textarea>
+                <div class="instrucao-campo">
+                    <label>*INSTRUÇÕES DO ATOR*</label>
+                    <textarea id="instrucoesAtor" placeholder="Digite as instruções para o ator...">Você é a mãe/paciente. Responda apenas o que for perguntado.</textarea>
                 </div>
             </div>
 
-            <div class="form-group" style="margin-bottom: 20px;">
-                <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #4a5568;">📋 CONTEÚDO GERAL (Use *texto* para criar tópicos):</label>
+            <div class="form-group">
+                <label>📋 CONTEÚDO GERAL (Use *texto* para criar tópicos):</label>
                 <textarea id="novoGeral" placeholder="*ANAMNESE*
 História da doença atual...
 
 *EXAME FÍSICO*
-Sinais vitais, inspeção..." style="width: 100%; padding: 12px; border: 2px solid #e2e8f0; border-radius: 8px; min-height: 100px;"></textarea>
+Sinais vitais, inspeção..."></textarea>
                 <small style="color: #718096;">Use *texto* para criar tópicos em CAIXA ALTA E NEGRITO</small>
             </div>
 
-            <div class="form-group" style="margin-bottom: 20px;">
-                <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #4a5568;">🖨️ IMPRESSOS (cada *TÍTULO* vira bloco com seta):</label>
+            <div class="form-group">
+                <label>🖨️ IMPRESSOS (cada *TÍTULO* vira bloco com seta):</label>
                 <textarea id="novoImpressao" placeholder="*HIPÓTESE DIAGNÓSTICA*
 Colecistite aguda
 
 *EXAMES*
 Hemograma
 PCR
-USG abdome" style="width: 100%; padding: 12px; border: 2px solid #e2e8f0; border-radius: 8px; min-height: 100px;"></textarea>
-                <div class="image-attachment" onclick="document.getElementById('uploadImagem').click()" style="border: 2px dashed #cbd5e0; border-radius: 10px; padding: 20px; text-align: center; margin: 15px 0; cursor: pointer;">
-                    📷 Clique para anexar imagem (opcional)
-                    <input type="file" id="uploadImagem" accept="image/*" style="display: none;" onchange="previewImagem(this)">
-                </div>
-                <div id="previewImagemContainer"></div>
-                <input type="hidden" id="imagemBase64">
+USG abdome"></textarea>
             </div>
 
-            <div class="form-group" style="margin-bottom: 20px;">
-                <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #4a5568;">✅ CHECKLIST (cole o texto bruto):</label>
+            <div class="form-group">
+                <label>✅ CHECKLIST (cole o texto bruto):</label>
                 <textarea id="novoChecklist" placeholder="1. ACOLHIMENTO INICIAL
 (1) Apresenta-se à paciente.
 (2) Cumprimenta a paciente.
@@ -543,44 +678,44 @@ Investiga ao menos 4 dos seguintes aspectos:
 (4) Intensidade
 Adequado: Investiga 4 ou 5 aspectos.
 Parcialmente adequado: Investiga 2 ou 3 aspectos.
-Inadequado: Investiga 0 ou 1 aspecto." style="width: 100%; padding: 12px; border: 2px solid #e2e8f0; border-radius: 8px; min-height: 150px;"></textarea>
+Inadequado: Investiga 0 ou 1 aspecto."></textarea>
                 <small style="color: #718096;">Toda linha começando com 1. / 2. / 3. vira um item da tabela automaticamente</small>
             </div>
 
-            <div class="form-group" style="margin-bottom: 20px;">
-                <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #4a5568;">📝 RESUMO (Use *texto* para tópicos):</label>
+            <div class="form-group">
+                <label>📝 RESUMO (Use *texto* para tópicos):</label>
                 <textarea id="novoResumo" placeholder="*PONTOS-CHAVE*
 Investigar sinais de gravidade
 Definir hipótese principal
-Estabelecer conduta inicial" style="width: 100%; padding: 12px; border: 2px solid #e2e8f0; border-radius: 8px; min-height: 100px;"></textarea>
+Estabelecer conduta inicial"></textarea>
             </div>
 
-            <div class="modal-actions" style="display: flex; gap: 10px; margin-top: 30px; flex-wrap: wrap;">
-                <button class="btn-primary" onclick="salvarNovaEstacao()" style="background: #667eea; color: white; border: none; padding: 12px 24px; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.3s; flex: 1;">Salvar Estação</button>
-                <button class="btn-secondary" onclick="fecharModalNovaEstacao()" style="background: #a0aec0; color: white; border: none; padding: 12px 24px; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.3s; flex: 1;">Cancelar</button>
+            <div class="modal-actions">
+                <button class="btn-primary" onclick="salvarNovaEstacao()">Salvar Estação</button>
+                <button class="btn-secondary" onclick="fecharModalNovaEstacao()">Cancelar</button>
             </div>
         </div>
     </div>
 
-    <div class="flashcard-mode" id="flashcardMode" style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.95); display: none; justify-content: center; align-items: center; z-index: 1000;">
-        <div class="flashcard-container" style="width: 90%; max-width: 1200px; max-height: 90vh;">
-            <div class="flashcard" id="flashcard" style="background: white; border-radius: 30px; padding: 30px; box-shadow: 0 30px 60px rgba(0, 0, 0, 0.3); max-height: 80vh; overflow-y: auto;">
-                <div class="flashcard-pages" id="flashcardPages" style="display: flex; gap: 10px; margin: 20px 0; border-bottom: 2px solid #e2e8f0; padding-bottom: 15px; flex-wrap: wrap;">
-                    <div class="page-tab active" onclick="mudarPaginaFlashcard('geral', this)" style="padding: 10px 20px; background: #edf2f7; border-radius: 8px; cursor: pointer; font-weight: 600;">📋 Geral</div>
-                    <div class="page-tab" onclick="mudarPaginaFlashcard('indicacoes', this)" style="padding: 10px 20px; background: #edf2f7; border-radius: 8px; cursor: pointer; font-weight: 600;">💡 Indicações</div>
-                    <div class="page-tab" onclick="mudarPaginaFlashcard('impressos', this)" style="padding: 10px 20px; background: #edf2f7; border-radius: 8px; cursor: pointer; font-weight: 600;">🖨️ Impressos</div>
-                    <div class="page-tab" onclick="mudarPaginaFlashcard('checklist', this)" style="padding: 10px 20px; background: #edf2f7; border-radius: 8px; cursor: pointer; font-weight: 600;">✅ Checklist</div>
-                    <div class="page-tab" onclick="mudarPaginaFlashcard('resumo', this)" style="padding: 10px 20px; background: #edf2f7; border-radius: 8px; cursor: pointer; font-weight: 600;">📝 Resumo</div>
+    <div class="flashcard-mode" id="flashcardMode">
+        <div class="flashcard-container">
+            <div class="flashcard" id="flashcard">
+                <div class="flashcard-pages" id="flashcardPages">
+                    <div class="page-tab active" onclick="mudarPaginaFlashcard('geral', this)">📋 Geral</div>
+                    <div class="page-tab" onclick="mudarPaginaFlashcard('indicacoes', this)">💡 Indicações</div>
+                    <div class="page-tab" onclick="mudarPaginaFlashcard('impressos', this)">🖨️ Impressos</div>
+                    <div class="page-tab" onclick="mudarPaginaFlashcard('checklist', this)">✅ Checklist</div>
+                    <div class="page-tab" onclick="mudarPaginaFlashcard('resumo', this)">📝 Resumo</div>
                 </div>
 
-                <div class="page-content" id="flashcardPageContent" style="min-height: 300px; line-height: 1.8; padding: 10px;"></div>
+                <div class="page-content" id="flashcardPageContent"></div>
             </div>
 
-            <div class="flashcard-controls" style="display: flex; justify-content: center; gap: 20px; margin-top: 20px; flex-wrap: wrap;">
-                <button class="flashcard-btn prev" onclick="prevCard()" style="padding: 12px 25px; border: none; border-radius: 10px; font-size: 1em; font-weight: 600; cursor: pointer; background: #f56565; color: white;">⬅ Anterior</button>
-                <button class="flashcard-btn shuffle" onclick="shuffleCards()" style="padding: 12px 25px; border: none; border-radius: 10px; font-size: 1em; font-weight: 600; cursor: pointer; background: #9f7aea; color: white;">🔄 Embaralhar</button>
-                <button class="flashcard-btn next" onclick="nextCard()" style="padding: 12px 25px; border: none; border-radius: 10px; font-size: 1em; font-weight: 600; cursor: pointer; background: #48bb78; color: white;">Próximo ➡</button>
-                <button class="flashcard-btn close" onclick="closeFlashcards()" style="padding: 12px 25px; border: none; border-radius: 10px; font-size: 1em; font-weight: 600; cursor: pointer; background: #718096; color: white;">✖ Fechar</button>
+            <div class="flashcard-controls">
+                <button class="flashcard-btn prev" onclick="prevCard()">⬅ Anterior</button>
+                <button class="flashcard-btn shuffle" onclick="shuffleCards()">🔄 Embaralhar</button>
+                <button class="flashcard-btn next" onclick="nextCard()">Próximo ➡</button>
+                <button class="flashcard-btn close" onclick="closeFlashcards()">✖ Fechar</button>
             </div>
             <div style="text-align: center; color: white; margin-top: 15px;">
                 <span id="flashcardCounter"></span>
@@ -589,30 +724,6 @@ Estabelecer conduta inicial" style="width: 100%; padding: 12px; border: 2px soli
     </div>
 
     <script>
-        // ========== CONFIGURAÇÃO DO FIREBASE ==========
-        // IMPORTANTE: Você precisa criar um projeto no Firebase e substituir estas configurações
-        
-        // 1. Vá em https://console.firebase.google.com/
-        // 2. Clique em "Criar projeto"
-        // 3. Siga os passos
-        // 4. No menu, clique em "Adicionar app" > "Web" (</>)
-        // 5. Copie as configurações e cole abaixo:
-        
-        const firebaseConfig = {
-    apiKey: "AIzaSyDgJv0zE-f-vK5Ye69pGvc8g8Zc6_RMw",
-    authDomain: "renan-revalida.firebaseapp.com",
-    projectId: "renan-revalida",
-    storageBucket: "renan-revalida.firebasestorage.app",
-    messagingSenderId: "179954744883",
-    appId: "1:179954744883:web:cec1bfbc0859ee8b14b4d6"
-};
-
-        // Inicializar Firebase
-        firebase.initializeApp(firebaseConfig);
-        const auth = firebase.auth();
-        const db = firebase.firestore();
-
-        // ========== VARIÁVEIS GLOBAIS ==========
         let stationsData = [];
         let currentFilter = "all";
         let currentSpecialty = "all";
@@ -620,337 +731,692 @@ Estabelecer conduta inicial" style="width: 100%; padding: 12px; border: 2px soli
         let flashcardDeck = [];
         let currentFlashcardIndex = 0;
         let currentFlashcardPage = 'geral';
-        let imagemTemp = null;
-        let currentUser = null;
-        let syncTimeout = null;
 
-        // ========== FUNÇÕES DE LOGIN ==========
-        function toggleLoginRegister() {
-            const loginForm = document.getElementById('loginForm');
-            const registerForm = document.getElementById('registerForm');
-            const toggleLink = document.getElementById('toggleLoginRegister');
-            
-            if (loginForm.style.display === 'none') {
-                loginForm.style.display = 'block';
-                registerForm.style.display = 'none';
-                toggleLink.textContent = 'Não tem uma conta? Cadastre-se';
-            } else {
-                loginForm.style.display = 'none';
-                registerForm.style.display = 'block';
-                toggleLink.textContent = 'Já tem uma conta? Faça login';
+        function escaparHTML(str) {
+            return String(str || '')
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+        }
+
+        function quebrarLinhas(str) {
+            return escaparHTML(str).replace(/\n/g, '<br>');
+        }
+
+        function formatarTextoComTopicos(texto) {
+            if (!texto || texto.trim() === '') {
+                return '<div class="topicos-formatados">Sem conteúdo.</div>';
             }
-        }
 
-        function mostrarErro(mensagem) {
-            const errorDiv = document.getElementById('loginError');
-            errorDiv.textContent = mensagem;
-            errorDiv.style.display = 'block';
-            setTimeout(() => {
-                errorDiv.style.display = 'none';
-            }, 5000);
-        }
+            const linhas = texto.split('\n');
+            let html = '<div class="topicos-formatados">';
+            let currentTopico = null;
+            let currentConteudo = [];
+            let textoLivre = [];
 
-        function mostrarSucesso(mensagem) {
-            const successDiv = document.getElementById('loginSuccess');
-            successDiv.textContent = mensagem;
-            successDiv.style.display = 'block';
-            setTimeout(() => {
-                successDiv.style.display = 'none';
-            }, 3000);
-        }
-
-        function showLoading() {
-            document.getElementById('loadingOverlay').classList.add('active');
-        }
-
-        function hideLoading() {
-            document.getElementById('loadingOverlay').classList.remove('active');
-        }
-
-        function updateSyncStatus(status, message) {
-            const syncEl = document.getElementById('syncStatus');
-            syncEl.className = 'sync-status ' + status;
-            if (status === 'syncing') {
-                syncEl.innerHTML = '<i class="fas fa-sync fa-spin"></i><span>Sincronizando...</span>';
-            } else if (status === 'error') {
-                syncEl.innerHTML = '<i class="fas fa-exclamation-triangle"></i><span>' + message + '</span>';
-            } else {
-                syncEl.innerHTML = '<i class="fas fa-cloud-upload-alt"></i><span>' + message + '</span>';
+            function finalizarTopico() {
+                if (currentTopico) {
+                    html += `<div class="topico">${escaparHTML(currentTopico)}</div>`;
+                    html += `<div class="conteudo-topico">${currentConteudo.map(l => escaparHTML(l)).join('<br>')}</div>`;
+                }
             }
+
+            for (let i = 0; i < linhas.length; i++) {
+                const linhaOriginal = linhas[i];
+                const linha = linhaOriginal.trim();
+
+                if (/^\*[^*].*[^*]\*$/.test(linha)) {
+                    finalizarTopico();
+                    currentTopico = linha.substring(1, linha.length - 1).trim().toUpperCase();
+                    currentConteudo = [];
+                } else if (linha !== '') {
+                    if (currentTopico) {
+                        currentConteudo.push(linhaOriginal);
+                    } else {
+                        textoLivre.push(linhaOriginal);
+                    }
+                }
+            }
+
+            finalizarTopico();
+
+            if (textoLivre.length > 0) {
+                html = '<div class="topicos-formatados"><div class="conteudo-topico" style="margin-left:0;">' +
+                    textoLivre.map(l => escaparHTML(l)).join('<br>') +
+                    '</div>' + html.replace('<div class="topicos-formatados">', '');
+            }
+
+            html += '</div>';
+            return html;
         }
 
-        // Verificar conexão
-        window.addEventListener('online', () => {
-            document.getElementById('connectionStatus').className = 'connection-status online';
-            document.getElementById('connectionStatus').innerHTML = '<i class="fas fa-wifi"></i><span>Online</span>';
-        });
+        function formatarImpressosColapsaveis(texto) {
+            if (!texto || texto.trim() === '') {
+                return '<div class="topicos-formatados">Sem impressos disponíveis.</div>';
+            }
 
-        window.addEventListener('offline', () => {
-            document.getElementById('connectionStatus').className = 'connection-status offline';
-            document.getElementById('connectionStatus').innerHTML = '<i class="fas fa-wifi-slash"></i><span>Offline</span>';
-        });
+            const linhas = texto.split('\n');
+            let blocos = [];
+            let topicoAtual = null;
+            let conteudoAtual = [];
+            let textoLivre = [];
 
-        // ========== FUNÇÕES DO FIREBASE ==========
-        async function carregarDadosDoFirebase() {
-            if (!currentUser) return;
-            
-            try {
-                showLoading();
-                updateSyncStatus('syncing', '');
-                
-                const docRef = db.collection('usuarios').doc(currentUser.uid);
-                const docSnap = await docRef.get();
-                
-                if (docSnap.exists) {
-                    const dados = docSnap.data();
-                    stationsData = dados.stations || [];
-                    console.log('Dados carregados do Firebase:', stationsData.length, 'estações');
-                } else {
-                    // Primeiro acesso - criar documento inicial
-                    stationsData = [];
-                    await docRef.set({ 
-                        stations: [],
-                        email: currentUser.email,
-                        nome: currentUser.displayName || '',
-                        ultimoAcesso: new Date().toISOString()
+            function finalizarBloco() {
+                if (topicoAtual) {
+                    blocos.push({
+                        titulo: topicoAtual,
+                        conteudo: conteudoAtual.join('\n').trim()
                     });
                 }
-                
-                atualizarContadores();
-                renderSpecialties();
-                renderFilters();
-                renderStations();
-                updateSyncStatus('', 'Sincronizado');
-                
-            } catch (error) {
-                console.error('Erro ao carregar dados:', error);
-                updateSyncStatus('error', 'Erro ao sincronizar');
-                mostrarErro('Erro ao carregar dados: ' + error.message);
-            } finally {
-                hideLoading();
             }
-        }
 
-        async function salvarDadosNoFirebase() {
-            if (!currentUser) return;
-            
-            // Debounce para evitar muitas chamadas
-            if (syncTimeout) clearTimeout(syncTimeout);
-            
-            syncTimeout = setTimeout(async () => {
-                try {
-                    updateSyncStatus('syncing', '');
-                    
-                    await db.collection('usuarios').doc(currentUser.uid).set({
-                        stations: stationsData,
-                        email: currentUser.email,
-                        ultimoAcesso: new Date().toISOString()
-                    }, { merge: true });
-                    
-                    updateSyncStatus('', 'Sincronizado');
-                    
-                } catch (error) {
-                    console.error('Erro ao salvar:', error);
-                    updateSyncStatus('error', 'Erro ao salvar');
+            for (let linhaOriginal of linhas) {
+                const linha = linhaOriginal.trim();
+
+                if (/^\*[^*].*[^*]\*$/.test(linha)) {
+                    finalizarBloco();
+                    topicoAtual = linha.substring(1, linha.length - 1).trim();
+                    conteudoAtual = [];
+                } else if (linha !== '') {
+                    if (topicoAtual) {
+                        conteudoAtual.push(linhaOriginal);
+                    } else {
+                        textoLivre.push(linhaOriginal);
+                    }
                 }
-            }, 500);
+            }
+
+            finalizarBloco();
+
+            let html = '<div class="topicos-formatados">';
+
+            if (textoLivre.length > 0) {
+                html += `<div class="conteudo-topico" style="margin-left:0;">${textoLivre.map(l => escaparHTML(l)).join('<br>')}</div>`;
+            }
+
+            blocos.forEach((bloco, index) => {
+                html += `
+                    <div class="accordion-box ${index === 0 ? 'open' : ''}">
+                        <button type="button" class="accordion-header" onclick="toggleAccordion(this)">
+                            <span>${escaparHTML(bloco.titulo)}</span>
+                            <span class="accordion-arrow">▶</span>
+                        </button>
+                        <div class="accordion-content">${quebrarLinhas(bloco.conteudo || 'Sem conteúdo.')}</div>
+                    </div>
+                `;
+            });
+
+            html += '</div>';
+            return html;
         }
 
-        // Sobrescrever funções originais de salvamento
-        const salvarDadosOriginal = salvarDados;
-        salvarDados = function() {
-            salvarDadosOriginal();
-            salvarDadosNoFirebase();
-        };
+        function toggleAccordion(botao) {
+            const box = botao.closest('.accordion-box');
+            if (box) box.classList.toggle('open');
+        }
 
-        // ========== FUNÇÕES DE AUTENTICAÇÃO ==========
-        async function fazerLogin() {
-            const email = document.getElementById('loginEmail').value.trim();
-            const senha = document.getElementById('loginPassword').value.trim();
-            
-            if (!email || !senha) {
-                mostrarErro('Preencha email e senha');
-                return;
+        function formatarChecklistComoTabela(texto) {
+            if (!texto || texto.trim() === '') {
+                return '<div class="topicos-formatados">Sem checklist disponível.</div>';
             }
-            
-            try {
-                showLoading();
-                const userCredential = await auth.signInWithEmailAndPassword(email, senha);
-                currentUser = userCredential.user;
-                document.getElementById('userEmail').textContent = currentUser.email;
-                await carregarDadosDoFirebase();
-                document.getElementById('loginScreen').style.display = 'none';
-                document.getElementById('mainApp').style.display = 'block';
-            } catch (error) {
-                console.error('Erro no login:', error);
-                let mensagem = 'Erro ao fazer login';
-                if (error.code === 'auth/user-not-found') {
-                    mensagem = 'Usuário não encontrado';
-                } else if (error.code === 'auth/wrong-password') {
-                    mensagem = 'Senha incorreta';
-                } else if (error.code === 'auth/invalid-email') {
-                    mensagem = 'Email inválido';
-                } else if (error.code === 'auth/too-many-requests') {
-                    mensagem = 'Muitas tentativas. Tente novamente mais tarde';
+
+            const linhas = texto.split('\n');
+            const itens = [];
+            let itemAtual = null;
+
+            function salvarItemAtual() {
+                if (itemAtual) {
+                    itens.push(itemAtual);
                 }
-                mostrarErro(mensagem);
-            } finally {
-                hideLoading();
             }
-        }
 
-        async function criarConta() {
-            const nome = document.getElementById('registerName').value.trim();
-            const email = document.getElementById('registerEmail').value.trim();
-            const senha = document.getElementById('registerPassword').value.trim();
-            
-            if (!nome || !email || !senha) {
-                mostrarErro('Preencha todos os campos');
-                return;
+            for (let i = 0; i < linhas.length; i++) {
+                const linhaOriginal = linhas[i];
+                const linha = linhaOriginal.trim();
+
+                if (!linha) continue;
+
+                if (/^\d+\.\s+/.test(linha)) {
+                    salvarItemAtual();
+
+                    itemAtual = {
+                        titulo: linha.replace(/^\d+\.\s+/, '').trim(),
+                        subitens: [],
+                        descricoes: [],
+                        adequadoTexto: '',
+                        parcialTexto: '',
+                        inadequadoTexto: '',
+                        inadequadoValor: '0',
+                        parcialValor: '0.25',
+                        adequadoValor: '0.5'
+                    };
+                }
+                else if (/^\(\d+\)\s+/.test(linha)) {
+                    if (itemAtual) {
+                        itemAtual.subitens.push(linha);
+                    }
+                }
+                else if (/^Adequado:/i.test(linha)) {
+                    if (itemAtual) {
+                        itemAtual.adequadoTexto = linha;
+                    }
+                }
+                else if (/^Parcialmente adequado:/i.test(linha)) {
+                    if (itemAtual) {
+                        itemAtual.parcialTexto = linha;
+                    }
+                }
+                else if (/^Inadequado:/i.test(linha)) {
+                    if (itemAtual) {
+                        itemAtual.inadequadoTexto = linha;
+                    }
+                }
+                else {
+                    if (itemAtual) {
+                        itemAtual.descricoes.push(linhaOriginal);
+                    }
+                }
             }
-            
-            if (senha.length < 6) {
-                mostrarErro('A senha deve ter pelo menos 6 caracteres');
-                return;
+
+            salvarItemAtual();
+
+            if (itens.length === 0) {
+                return '<div class="topicos-formatados">Formato do checklist não reconhecido. Use linhas começando com "1.", "2.", "3."...</div>';
             }
-            
-            try {
-                showLoading();
-                const userCredential = await auth.createUserWithEmailAndPassword(email, senha);
-                await userCredential.user.updateProfile({ displayName: nome });
-                
-                currentUser = userCredential.user;
-                document.getElementById('userEmail').textContent = currentUser.email;
-                
-                // Criar documento inicial no Firestore
-                await db.collection('usuarios').doc(currentUser.uid).set({
-                    stations: [],
-                    email: currentUser.email,
-                    nome: nome,
-                    criadoEm: new Date().toISOString()
+
+            let html = '<table class="checklist-tabela">';
+            html += `
+                <tr>
+                    <th>Itens de Desempenho Avaliados</th>
+                    <th>Inadequado</th>
+                    <th>Parcialmente Adequado</th>
+                    <th>Adequado</th>
+                    <th>Avaliação</th>
+                </tr>
+            `;
+
+            itens.forEach((item, index) => {
+                html += '<tr>';
+                html += `<td class="checklist-item-principal"><strong>${index + 1}. ${escaparHTML(item.titulo)}</strong></td>`;
+                html += `<td class="checklist-pontuacao">${escaparHTML(item.inadequadoValor)}</td>`;
+                html += `<td class="checklist-pontuacao">${escaparHTML(item.parcialValor)}</td>`;
+                html += `<td class="checklist-pontuacao">${escaparHTML(item.adequadoValor)}</td>`;
+                html += `
+                    <td>
+                        <select class="avaliacao-select" onchange="calcularPontuacaoTotal()">
+                            <option value="0">Inadequado</option>
+                            <option value="${item.parcialValor}">Parcialmente</option>
+                            <option value="${item.adequadoValor}">Adequado</option>
+                        </select>
+                    </td>
+                `;
+                html += '</tr>';
+
+                if (item.descricoes.length > 0) {
+                    html += '<tr>';
+                    html += `<td colspan="5" style="background:#f8fafc;">${item.descricoes.map(t => escaparHTML(t)).join('<br>')}</td>`;
+                    html += '</tr>';
+                }
+
+                item.subitens.forEach(subitem => {
+                    html += '<tr>';
+                    html += `<td class="checklist-subitem">${escaparHTML(subitem)}</td>`;
+                    html += '<td></td><td></td><td></td><td></td>';
+                    html += '</tr>';
                 });
-                
+
+                if (item.adequadoTexto) {
+                    html += `<tr><td colspan="5" class="descricao-adequado"><strong>Adequado:</strong> ${escaparHTML(item.adequadoTexto.replace(/^Adequado:\s*/i, ''))}</td></tr>`;
+                }
+                if (item.parcialTexto) {
+                    html += `<tr><td colspan="5" class="descricao-parcial"><strong>Parcialmente adequado:</strong> ${escaparHTML(item.parcialTexto.replace(/^Parcialmente adequado:\s*/i, ''))}</td></tr>`;
+                }
+                if (item.inadequadoTexto) {
+                    html += `<tr><td colspan="5" class="descricao-inadequado"><strong>Inadequado:</strong> ${escaparHTML(item.inadequadoTexto.replace(/^Inadequado:\s*/i, ''))}</td></tr>`;
+                }
+            });
+
+            html += '</table>';
+
+            html += `
+                <div class="acoes-checklist">
+                    <button class="btn-calcular" onclick="calcularPontuacaoTotal()">📊 Calcular Pontuação</button>
+                    <div class="resultado-pontuacao" id="resultadoPontuacao">Pontuação Total: 0.00</div>
+                </div>
+            `;
+
+            return html;
+        }
+
+        function calcularPontuacaoTotal() {
+            const selects = document.querySelectorAll('.avaliacao-select');
+            let pontuacaoTotal = 0;
+
+            selects.forEach(select => {
+                pontuacaoTotal += parseFloat(select.value || '0');
+            });
+
+            const resultadoElement = document.getElementById('resultadoPontuacao');
+            if (resultadoElement) {
+                resultadoElement.innerHTML = `Pontuação Total: ${pontuacaoTotal.toFixed(2)}`;
+            }
+
+            return pontuacaoTotal;
+        }
+
+        function criarCabecalhoGeral(station) {
+            return `
+                <div class="info-header">
+                    <div class="info-linha">
+                        <span class="info-label">Nome:</span>
+                        <span class="info-valor">${escaparHTML(station.title || '')}</span>
+                    </div>
+                    <div class="info-linha">
+                        <span class="info-label">Área:</span>
+                        <span class="info-valor">${escaparHTML(station.specialty || '')}</span>
+                    </div>
+                    <div class="info-linha">
+                        <span class="info-label">Tema:</span>
+                        <span class="info-valor">${escaparHTML(station.tema || 'Não definido')}</span>
+                    </div>
+                    <div class="info-linha">
+                        <span class="info-label">Revalida:</span>
+                        <span class="info-valor">${escaparHTML(station.year || '')}</span>
+                    </div>
+                </div>
+            `;
+        }
+
+        function carregarDados() {
+            try {
+                const dadosSalvos = localStorage.getItem('revalidaStations');
+                if (dadosSalvos) {
+                    stationsData = JSON.parse(dadosSalvos);
+                } else {
+                    // Dados iniciais de exemplo
+                    stationsData = [
+                        {
+                            id: 1,
+                            title: "Dor Abdominal - Apendicite",
+                            specialty: "Cirurgia Geral",
+                            tema: "Abdome Agudo",
+                            year: 2023,
+                            official: true,
+                            studied: false,
+                            instrucoes: {
+                                candidato: "Você está no pronto-socorro. Paciente com dor abdominal há 2 dias.",
+                                ator: "Dor em FID, piora com movimento, sem febre."
+                            },
+                            content: {
+                                geral: "*ANAMNESE*\nDor iniciou em região periumbilical, migrou para FID há 12h. Náuseas, sem vômitos.\n\n*EXAME FÍSICO*\nSinal de Blumberg positivo. Descompressão brusca dolorosa.",
+                                indicacoes: "*INSTRUÇÕES DO CANDIDATO*\nPaciente com dor abdominal há 2 dias. Realize anamnese e exame físico.\n\n*INSTRUÇÕES DO ATOR*\nDor em FID, piora com movimento, sem febre.",
+                                impressos: "*HIPÓTESE*\nApendicite aguda\n\n*EXAMES*\nHemograma\nUSG abdome total",
+                                checklist: "1. ANAMNESE\n(1) Pergunta início da dor\n(2) Pergunta localização\n(3) Pergunta migração\n(4) Pergunta sintomas associados\nAdequado: Pergunta 4 itens\nParcialmente adequado: Pergunta 2-3 itens\nInadequado: Pergunta 0-1 item",
+                                resumo: "*PONTOS-CHAVE*\nDor migratória é clássica\nSinal de Blumberg\nApendicite é a principal hipótese"
+                            }
+                        }
+                    ];
+                }
+                atualizarContadores();
+                renderSpecialties();
+                renderFilters();
+                renderStations();
+            } catch (e) {
+                console.error("Erro ao carregar dados:", e);
                 stationsData = [];
                 atualizarContadores();
                 renderSpecialties();
                 renderFilters();
                 renderStations();
-                
-                document.getElementById('loginScreen').style.display = 'none';
-                document.getElementById('mainApp').style.display = 'block';
-                mostrarSucesso('Conta criada com sucesso!');
-                
-            } catch (error) {
-                console.error('Erro ao criar conta:', error);
-                let mensagem = 'Erro ao criar conta';
-                if (error.code === 'auth/email-already-in-use') {
-                    mensagem = 'Este email já está cadastrado';
-                } else if (error.code === 'auth/invalid-email') {
-                    mensagem = 'Email inválido';
-                } else if (error.code === 'auth/weak-password') {
-                    mensagem = 'Senha muito fraca';
+            }
+        }
+
+        function salvarDados() {
+            try {
+                localStorage.setItem('revalidaStations', JSON.stringify(stationsData));
+                atualizarContadores();
+            } catch (e) {
+                console.error("Erro ao salvar dados:", e);
+            }
+        }
+
+        function atualizarContadores() {
+            document.getElementById('totalStations').textContent = stationsData.length;
+            const oficial = stationsData.filter(s => s.official).length;
+            document.getElementById('officialStations').textContent = oficial;
+            const medstuder = stationsData.filter(s => !s.official).length;
+            document.getElementById('medstuderStations').textContent = medstuder;
+            const estudadas = stationsData.filter(s => s.studied).length;
+            document.getElementById('studiedStations').textContent = estudadas;
+            const progresso = stationsData.length > 0 ? (estudadas / stationsData.length) * 100 : 0;
+            document.getElementById('progressFill').style.width = progresso + '%';
+        }
+
+        function markAsStudied(id) {
+            const station = stationsData.find(s => s.id === id);
+            if (station) {
+                station.studied = !station.studied;
+                salvarDados();
+                renderStations();
+                if (document.getElementById('flashcardMode').classList.contains('active')) {
+                    mostrarPaginaFlashcard(currentFlashcardPage);
                 }
-                mostrarErro(mensagem);
-            } finally {
-                hideLoading();
             }
         }
 
-        async function loginComGoogle() {
-            try {
-                showLoading();
-                const provider = new firebase.auth.GoogleAuthProvider();
-                const userCredential = await auth.signInWithPopup(provider);
-                currentUser = userCredential.user;
-                document.getElementById('userEmail').textContent = currentUser.email;
-                await carregarDadosDoFirebase();
-                document.getElementById('loginScreen').style.display = 'none';
-                document.getElementById('mainApp').style.display = 'block';
-            } catch (error) {
-                console.error('Erro no Google:', error);
-                mostrarErro('Erro ao fazer login com Google');
-            } finally {
-                hideLoading();
+        function deleteStation(id) {
+            if (confirm('Tem certeza que deseja excluir esta estação?')) {
+                stationsData = stationsData.filter(s => s.id !== id);
+                salvarDados();
+                renderSpecialties();
+                renderFilters();
+                renderStations();
             }
         }
 
-        async function recuperarSenha() {
-            const email = prompt('Digite seu email para recuperar a senha:');
-            if (!email) return;
-            
-            try {
-                showLoading();
-                await auth.sendPasswordResetEmail(email);
-                mostrarSucesso('Email de recuperação enviado! Verifique sua caixa de entrada.');
-            } catch (error) {
-                console.error('Erro ao recuperar senha:', error);
-                mostrarErro('Erro ao enviar email de recuperação');
-            } finally {
-                hideLoading();
-            }
+        function renderSpecialties() {
+            const specialtiesDiv = document.getElementById('specialties');
+            const specialties = [...new Set(stationsData.map(s => s.specialty).filter(Boolean))];
+
+            let html = `
+                <div class="menu-item ${currentSpecialty === 'all' ? 'active' : ''}" onclick="filterBySpecialty('all', this)">
+                    <span>📌 Todas as Especialidades</span>
+                </div>
+            `;
+
+            specialties.forEach(specialty => {
+                const count = stationsData.filter(s => s.specialty === specialty).length;
+                html += `
+                    <div class="menu-item ${currentSpecialty === specialty ? 'active' : ''}" onclick="filterBySpecialty('${String(specialty).replace(/'/g, "\\'")}', this)">
+                        <span>${escaparHTML(specialty)}</span>
+                        <span class="count">${count}</span>
+                    </div>
+                `;
+            });
+
+            specialtiesDiv.innerHTML = html;
         }
 
-        async function fazerLogout() {
-            try {
-                await auth.signOut();
-                currentUser = null;
-                stationsData = [];
-                document.getElementById('loginScreen').style.display = 'flex';
-                document.getElementById('mainApp').style.display = 'none';
-                document.getElementById('loginEmail').value = '';
-                document.getElementById('loginPassword').value = '';
-            } catch (error) {
-                console.error('Erro ao sair:', error);
-                mostrarErro('Erro ao fazer logout');
-            }
+        function renderFilters() {
+            const filtersDiv = document.getElementById('filters');
+            const filters = [
+                { id: 'all', name: '📋 Todas' },
+                { id: 'inep', name: '🎯 Somente oficiais' },
+                { id: 'medstuder', name: '📚 Somente MedStuder' },
+                { id: 'studied', name: '✅ Já feitas' },
+                { id: 'new', name: '🆕 Somente novas' }
+            ];
+
+            let html = '';
+            filters.forEach(filter => {
+                html += `
+                    <div class="menu-item ${currentFilter === filter.id ? 'active' : ''}" onclick="setFilter('${filter.id}', this)">
+                        <span>${filter.name}</span>
+                    </div>
+                `;
+            });
+
+            filtersDiv.innerHTML = html;
         }
 
-        // ========== VERIFICAR ESTADO DO USUÁRIO ==========
-        auth.onAuthStateChanged(async (user) => {
-            if (user) {
-                currentUser = user;
-                document.getElementById('userEmail').textContent = user.email;
-                await carregarDadosDoFirebase();
-                document.getElementById('loginScreen').style.display = 'none';
-                document.getElementById('mainApp').style.display = 'block';
+        function filterBySpecialty(specialty, el) {
+            currentSpecialty = specialty;
+            document.querySelectorAll('#specialties .menu-item').forEach(item => item.classList.remove('active'));
+            if (el) el.classList.add('active');
+            renderStations();
+        }
+
+        function setFilter(filter, el) {
+            currentFilter = filter;
+            document.querySelectorAll('#filters .menu-item').forEach(item => item.classList.remove('active'));
+            if (el) el.classList.add('active');
+            renderStations();
+        }
+
+        function renderStations() {
+            let filtered = [...stationsData];
+
+            if (currentSpecialty !== 'all') {
+                filtered = filtered.filter(s => s.specialty === currentSpecialty);
+            }
+
+            if (currentFilter === 'inep') {
+                filtered = filtered.filter(s => s.official);
+            } else if (currentFilter === 'medstuder') {
+                filtered = filtered.filter(s => !s.official);
+            } else if (currentFilter === 'studied') {
+                filtered = filtered.filter(s => s.studied);
+            } else if (currentFilter === 'new') {
+                filtered = filtered.filter(s => !s.studied);
+            }
+
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase().trim();
+            if (searchTerm) {
+                filtered = filtered.filter(s =>
+                    (s.title || '').toLowerCase().includes(searchTerm) ||
+                    (s.specialty || '').toLowerCase().includes(searchTerm) ||
+                    (s.tema || '').toLowerCase().includes(searchTerm) ||
+                    String(s.year || '').includes(searchTerm)
+                );
+            }
+
+            filteredStations = filtered;
+
+            const grid = document.getElementById('stationsGrid');
+            let html = '';
+
+            filtered.forEach(station => {
+                const isStudied = station.studied;
+                html += `
+                    <div class="station-card ${isStudied ? 'studied' : ''}">
+                        <h3>${escaparHTML(station.title)}</h3>
+                        <div class="station-meta">
+                            <span class="badge specialty">${escaparHTML(station.specialty || '')}</span>
+                            <span class="badge ${station.official ? 'inep' : 'medstuder'}">
+                                ${station.official ? 'INEP ' + escaparHTML(station.year) : 'MedStuder'}
+                            </span>
+                        </div>
+                        <div style="color:#718096; font-size:0.95em; margin-top:8px;">
+                            ${station.tema ? 'Tema: ' + escaparHTML(station.tema) : ''}
+                        </div>
+                        <div class="study-actions">
+                            <button class="btn btn-study" onclick="event.stopPropagation(); markAsStudied(${station.id})">
+                                ${isStudied ? '✅ Revisar' : '📖 Marcar estudada'}
+                            </button>
+                            <button class="btn btn-flashcard" onclick="event.stopPropagation(); startFlashcard(${station.id})">
+                                🃏 Flashcard
+                            </button>
+                            <button class="btn btn-delete" onclick="event.stopPropagation(); deleteStation(${station.id})">
+                                🗑️ Excluir
+                            </button>
+                        </div>
+                    </div>
+                `;
+            });
+
+            grid.innerHTML = html || '<div style="text-align:center; padding:40px;">Nenhuma estação encontrada</div>';
+        }
+
+        function abrirModalNovaEstacao() {
+            document.getElementById('modalNovaEstacao').classList.add('active');
+            document.getElementById('novoTitulo').value = '';
+            document.getElementById('novoTema').value = '';
+            document.getElementById('novoAno').value = '2024';
+            document.getElementById('novaFonteInep').checked = true;
+            document.getElementById('instrucoesCandidato').value = 'Você está de plantão no pronto-socorro. Realize anamnese e exame físico completo.';
+            document.getElementById('instrucoesAtor').value = 'Você é a mãe/paciente. Responda apenas o que for perguntado.';
+            document.getElementById('novoGeral').value = '';
+            document.getElementById('novoImpressao').value = '';
+            document.getElementById('novoChecklist').value = '';
+            document.getElementById('novoResumo').value = '';
+        }
+
+        function fecharModalNovaEstacao() {
+            document.getElementById('modalNovaEstacao').classList.remove('active');
+        }
+
+        function salvarNovaEstacao() {
+            const titulo = document.getElementById('novoTitulo').value.trim();
+            if (!titulo) {
+                alert('Por favor, preencha o título da estação.');
+                return;
+            }
+
+            const instrucoesCandidato = document.getElementById('instrucoesCandidato').value.trim();
+            const instrucoesAtor = document.getElementById('instrucoesAtor').value.trim();
+
+            const indicacoesCompletas =
+                `*INSTRUÇÕES DO CANDIDATO*\n${instrucoesCandidato}\n\n*INSTRUÇÕES DO ATOR*\n${instrucoesAtor}`;
+
+            const novaEstacao = {
+                id: stationsData.length > 0 ? Math.max(...stationsData.map(s => s.id)) + 1 : 1,
+                title: titulo,
+                specialty: document.getElementById('novaEspecialidade').value,
+                tema: document.getElementById('novoTema').value.trim(),
+                year: parseInt(document.getElementById('novoAno').value) || new Date().getFullYear(),
+                source: document.getElementById('novaFonteInep').checked ? 'inep' : 'medstuder',
+                official: document.getElementById('novaFonteInep').checked,
+                studied: false,
+                instrucoes: {
+                    candidato: instrucoesCandidato,
+                    ator: instrucoesAtor
+                },
+                content: {
+                    geral: document.getElementById('novoGeral').value.trim(),
+                    indicacoes: indicacoesCompletas,
+                    impressos: document.getElementById('novoImpressao').value.trim(),
+                    checklist: document.getElementById('novoChecklist').value.trim(),
+                    resumo: document.getElementById('novoResumo').value.trim()
+                }
+            };
+
+            stationsData.push(novaEstacao);
+            salvarDados();
+            renderSpecialties();
+            renderFilters();
+            renderStations();
+            fecharModalNovaEstacao();
+            alert('✅ Estação criada com sucesso!');
+        }
+
+        function startFlashcard(stationId) {
+            if (stationId) {
+                const estacao = stationsData.find(s => s.id === stationId);
+                if (estacao) {
+                    flashcardDeck = [estacao];
+                } else {
+                    alert('Estação não encontrada.');
+                    return;
+                }
             } else {
-                document.getElementById('loginScreen').style.display = 'flex';
-                document.getElementById('mainApp').style.display = 'none';
+                flashcardDeck = [...filteredStations].filter(s => !s.studied);
+                if (flashcardDeck.length === 0) {
+                    flashcardDeck = [...filteredStations];
+                }
             }
-        });
 
-        // ========== SUAS FUNÇÕES ORIGINAIS ==========
-        // (mantenha todas as funções do seu código original aqui)
-        // funções: escaparHTML, quebrarLinhas, formatarTextoComTopicos, 
-        // formatarImpressosColapsaveis, toggleAccordion, formatarChecklistComoTabela,
-        // calcularPontuacaoTotal, criarCabecalhoGeral, obterIdCampoEdicao,
-        // iniciarEdicao, salvarEdicao, previewImagem, carregarDados, atualizarContadores,
-        // markAsStudied, deleteStation, renderSpecialties, renderFilters,
-        // filterBySpecialty, setFilter, renderStations, abrirModalNovaEstacao,
-        // fecharModalNovaEstacao, salvarNovaEstacao, startFlashcard,
-        // ativarAbaAtual, showFlashcard, mostrarPaginaFlashcard, mudarPaginaFlashcard,
-        // nextCard, prevCard, shuffleCards, closeFlashcards
+            if (flashcardDeck.length === 0) {
+                alert('Nenhuma estação disponível para estudo.');
+                return;
+            }
 
-        // Adaptar funções originais para usar Firebase
-        function salvarDadosOriginal() {
-            // Função vazia - os dados serão salvos no Firebase
+            currentFlashcardIndex = 0;
+            currentFlashcardPage = 'geral';
+            showFlashcard();
+            document.getElementById('flashcardMode').classList.add('active');
         }
 
-        function carregarDadosOriginal() {
-            // Não usar localStorage, dados virão do Firebase
-            stationsData = [];
+        function ativarAbaAtual() {
+            const paginas = ['geral', 'indicacoes', 'impressos', 'checklist', 'resumo'];
+            const tabs = document.querySelectorAll('.page-tab');
+            tabs.forEach(tab => tab.classList.remove('active'));
+            const idx = paginas.indexOf(currentFlashcardPage);
+            if (tabs[idx]) tabs[idx].classList.add('active');
         }
 
-        // ========== INICIALIZAÇÃO ==========
-        // Sobrescrever funções de salvamento
-        window.salvarDados = function() {
-            salvarDadosNoFirebase();
-        };
+        function showFlashcard() {
+            if (flashcardDeck.length === 0 || currentFlashcardIndex >= flashcardDeck.length) {
+                closeFlashcards();
+                return;
+            }
 
-        // Inicializar com dados vazios
-        stationsData = [];
+            ativarAbaAtual();
+            mostrarPaginaFlashcard(currentFlashcardPage);
+            document.getElementById('flashcardCounter').innerHTML =
+                `Estação ${currentFlashcardIndex + 1} de ${flashcardDeck.length}`;
+        }
 
-        // Adicionar listeners para eventos
+        function mostrarPaginaFlashcard(pagina) {
+            if (flashcardDeck.length === 0) return;
+
+            const station = flashcardDeck[currentFlashcardIndex];
+            if (!station) return;
+
+            let conteudo = '';
+
+            if (pagina === 'geral') {
+                conteudo = criarCabecalhoGeral(station) + formatarTextoComTopicos(station.content?.geral || '');
+            } else if (pagina === 'indicacoes') {
+                conteudo = formatarTextoComTopicos(station.content?.indicacoes || '');
+            } else if (pagina === 'impressos') {
+                conteudo = formatarImpressosColapsaveis(station.content?.impressos || '');
+            } else if (pagina === 'checklist') {
+                conteudo = formatarChecklistComoTabela(station.content?.checklist || '');
+            } else if (pagina === 'resumo') {
+                conteudo = formatarTextoComTopicos(station.content?.resumo || '');
+            }
+
+            conteudo += `
+                <div style="margin-top:30px; text-align:center; padding-top:20px; border-top:1px solid #e2e8f0;">
+                    <button class="btn btn-study" onclick="markAsStudied(${station.id})">
+                        ${station.studied ? '✅ Já estudada' : '📖 Marcar como estudada'}
+                    </button>
+                </div>
+            `;
+
+            document.getElementById('flashcardPageContent').innerHTML = conteudo;
+
+            if (pagina === 'checklist') {
+                calcularPontuacaoTotal();
+            }
+        }
+
+        function mudarPaginaFlashcard(pagina, el) {
+            currentFlashcardPage = pagina;
+            document.querySelectorAll('.page-tab').forEach(tab => tab.classList.remove('active'));
+            if (el) el.classList.add('active');
+            mostrarPaginaFlashcard(pagina);
+        }
+
+        function nextCard() {
+            if (currentFlashcardIndex < flashcardDeck.length - 1) {
+                currentFlashcardIndex++;
+                showFlashcard();
+            }
+        }
+
+        function prevCard() {
+            if (currentFlashcardIndex > 0) {
+                currentFlashcardIndex--;
+                showFlashcard();
+            }
+        }
+
+        function shuffleCards() {
+            for (let i = flashcardDeck.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [flashcardDeck[i], flashcardDeck[j]] = [flashcardDeck[j], flashcardDeck[i]];
+            }
+            currentFlashcardIndex = 0;
+            showFlashcard();
+        }
+
+        function closeFlashcards() {
+            document.getElementById('flashcardMode').classList.remove('active');
+        }
+
         document.getElementById('searchInput').addEventListener('input', function() {
             renderStations();
         });
@@ -973,45 +1439,8 @@ Estabelecer conduta inicial" style="width: 100%; padding: 12px; border: 2px soli
                 }
             }
         });
-    </script>
 
-    <!-- Incluir aqui TODAS as funções JavaScript do seu código original -->
-    <script>
-        // Cole aqui todas as funções do seu código original:
-        // - escaparHTML
-        // - quebrarLinhas
-        // - formatarTextoComTopicos
-        // - formatarImpressosColapsaveis
-        // - toggleAccordion
-        // - formatarChecklistComoTabela
-        // - calcularPontuacaoTotal
-        // - criarCabecalhoGeral
-        // - obterIdCampoEdicao
-        // - iniciarEdicao
-        // - salvarEdicao
-        // - previewImagem
-        // - atualizarContadores
-        // - markAsStudied
-        // - deleteStation
-        // - renderSpecialties
-        // - renderFilters
-        // - filterBySpecialty
-        // - setFilter
-        // - renderStations
-        // - abrirModalNovaEstacao
-        // - fecharModalNovaEstacao
-        // - salvarNovaEstacao
-        // - startFlashcard
-        // - ativarAbaAtual
-        // - showFlashcard
-        // - mostrarPaginaFlashcard
-        // - mudarPaginaFlashcard
-        // - nextCard
-        // - prevCard
-        // - shuffleCards
-        // - closeFlashcards
-        
-        // (Copie todas as funções do seu arquivo original aqui)
+        carregarDados();
     </script>
 </body>
 </html>
