@@ -17,7 +17,7 @@
 const supabaseUrl = "https://ttncwyqcdvyuxyfmlmyd.supabase.co";
 const supabaseKey = "sb_publishable_Xwau-MBPGCHfGPOh27bzkA_mc9nSKPx";
 
-const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+const supabaseClient = window.supabase.createClient(supabaseUrl, supabaseKey);
 </script>
 
 <style>
@@ -73,11 +73,6 @@ button:hover{
 background:#5563d6;
 }
 
-#resultado{
-margin-top:20px;
-white-space:pre-wrap;
-}
-
 </style>
 
 </head>
@@ -90,12 +85,10 @@ white-space:pre-wrap;
 
 <textarea id="texto" placeholder="Escreva aqui suas anotações do Revalida..."></textarea>
 
-<br>
+<br><br>
 
 <button onclick="salvar()">Salvar</button>
 <button onclick="carregar()">Carregar</button>
-
-<div id="resultado"></div>
 
 </div>
 
@@ -105,9 +98,9 @@ async function salvar(){
 
 const texto = document.getElementById("texto").value;
 
-const { error } = await supabase
+const { error } = await supabaseClient
 .from("estudos")
-.insert([{ conteudo:texto }]);
+.insert([{ conteudo: texto }]);
 
 if(error){
 alert("Erro ao salvar");
@@ -119,7 +112,7 @@ alert("Salvo com sucesso");
 
 async function carregar(){
 
-const { data, error } = await supabase
+const { data, error } = await supabaseClient
 .from("estudos")
 .select("*")
 .order("id",{ascending:false})
@@ -140,15 +133,6 @@ document.getElementById("texto").value = data[0].conteudo;
 
 </body>
 </html>
-.from("estudos")
-.select("*")
-.order("id",{ascending:false})
-.limit(1);
-
-if(data && data.length>0){
-document.getElementById("texto").value = data[0].conteudo;
-}
-
 }
 
 </script>
@@ -1575,6 +1559,7 @@ Estabelecer conduta inicial"></textarea>
     </script>
 </body>
 </html>
+
 
 
 
