@@ -1,10 +1,12 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
 
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>RevalidaMed - Estudo</title>
+
+<title>RevalidaMed</title>
 
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 
@@ -15,7 +17,7 @@
 const supabaseUrl = "https://ttncwyqcdvyuxyfmlmyd.supabase.co";
 const supabaseKey = "sb_publishable_Xwau-MBPGCHfGPOh27bzkA_mc9nSKPx";
 
-const supabase = supabase.createClient(supabaseUrl, supabaseKey);
+const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
 </script>
 
 <style>
@@ -1551,4 +1553,5 @@ Estabelecer conduta inicial"></textarea>
     </script>
 </body>
 </html>
+
 
