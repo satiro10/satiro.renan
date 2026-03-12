@@ -789,55 +789,116 @@
             border: 1px solid #e2e8f0;
         }
 
+        /* Accordion Styles - Novos estilos aprimorados */
         .accordion-box {
-            margin-bottom: 14px;
-            border: 1px solid #dbe3f0;
-            border-radius: 10px;
+            margin-bottom: 16px;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
             overflow: hidden;
             background: #fff;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            transition: all 0.2s ease;
+        }
+
+        .accordion-box:hover {
+            box-shadow: 0 4px 8px rgba(102, 126, 234, 0.15);
+            border-color: #667eea;
         }
 
         .accordion-header {
             width: 100%;
             border: none;
-            background: #f7fafc;
-            padding: 14px 16px;
+            background: #f8fafd;
+            padding: 16px 20px;
             text-align: left;
             font-weight: 700;
-            text-transform: uppercase;
             color: #2d3748;
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: space-between;
-            gap: 10px;
-            font-size: 1em;
+            gap: 12px;
+            font-size: 1.05em;
+            letter-spacing: 0.3px;
+            transition: all 0.2s ease;
         }
 
         .accordion-header:hover {
-            background: #edf2f7;
+            background: #edf2f9;
+        }
+
+        .accordion-header i {
+            color: #667eea;
+            font-size: 1.1em;
+            width: 20px;
+            text-align: center;
         }
 
         .accordion-arrow {
-            transition: transform 0.25s ease;
+            transition: transform 0.3s ease;
             font-size: 0.9em;
+            color: #667eea;
+            background: white;
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
 
         .accordion-box.open .accordion-arrow {
             transform: rotate(90deg);
+            background: #667eea;
+            color: white;
         }
 
         .accordion-content {
             display: none;
-            padding: 16px 18px;
+            padding: 20px 24px;
             color: #4a5568;
             white-space: pre-line;
             border-top: 1px solid #e2e8f0;
             background: #ffffff;
+            line-height: 1.7;
+            font-size: 1em;
         }
 
         .accordion-box.open .accordion-content {
             display: block;
+            animation: slideDown 0.3s ease;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Estilo especial para o accordion de instruções */
+        .instrucoes-accordion .accordion-header {
+            background: #f0f5ff;
+            border-left: 4px solid #667eea;
+        }
+
+        .instrucoes-accordion .accordion-header:hover {
+            background: #e6ecf9;
+        }
+
+        /* Estilo para o accordion do resumo */
+        .resumo-accordion .accordion-header {
+            background: #f0f9f0;
+            border-left: 4px solid #48bb78;
+        }
+
+        .resumo-accordion .accordion-header:hover {
+            background: #e6f2e6;
         }
 
         .descricao-adequado {
@@ -1020,11 +1081,17 @@ Inadequado: Investiga 0 ou 1 aspecto."></textarea>
             </div>
 
             <div class="form-group">
-                <label>📝 RESUMO (Use *texto* para tópicos):</label>
+                <label>📝 RESUMO (Use *texto* para tópicos que serão transformados em blocos expansíveis):</label>
                 <textarea id="novoResumo" placeholder="*PONTOS-CHAVE*
 Investigar sinais de gravidade
 Definir hipótese principal
-Estabelecer conduta inicial"></textarea>
+Estabelecer conduta inicial
+
+*ALGORITMO*
+Passo 1: Anamnese detalhada
+Passo 2: Exame físico
+Passo 3: Exames complementares"></textarea>
+                <small style="color: #718096;">Cada *TÓPICO* vira um bloco expansível com seta</small>
             </div>
 
             <div class="modal-actions">
@@ -1089,6 +1156,120 @@ Estabelecer conduta inicial"></textarea>
 
         function quebrarLinhas(str) {
             return escaparHTML(str).replace(/\n/g, '<br>');
+        }
+
+        // NOVA FUNÇÃO: Formatar texto com tópicos em accordion (para resumo)
+        function formatarResumoComAccordion(texto) {
+            if (!texto || texto.trim() === '') {
+                return '<div class="topicos-formatados">Sem resumo disponível.</div>';
+            }
+
+            const linhas = texto.split('\n');
+            let blocos = [];
+            let topicoAtual = null;
+            let conteudoAtual = [];
+            let textoLivre = [];
+
+            function finalizarBloco() {
+                if (topicoAtual) {
+                    blocos.push({
+                        titulo: topicoAtual,
+                        conteudo: conteudoAtual.join('\n').trim()
+                    });
+                }
+            }
+
+            for (let linhaOriginal of linhas) {
+                const linha = linhaOriginal.trim();
+
+                if (/^\*[^*].*[^*]\*$/.test(linha)) {
+                    finalizarBloco();
+                    topicoAtual = linha.substring(1, linha.length - 1).trim();
+                    conteudoAtual = [];
+                } else if (linha !== '') {
+                    if (topicoAtual) {
+                        conteudoAtual.push(linhaOriginal);
+                    } else {
+                        textoLivre.push(linhaOriginal);
+                    }
+                }
+            }
+
+            finalizarBloco();
+
+            let html = '<div class="topicos-formatados resumo-accordion">';
+
+            if (textoLivre.length > 0) {
+                html += `<div class="conteudo-topico" style="margin-left:0;">${textoLivre.map(l => escaparHTML(l)).join('<br>')}</div>`;
+            }
+
+            blocos.forEach((bloco, index) => {
+                html += `
+                    <div class="accordion-box ${index === 0 ? 'open' : ''}">
+                        <button type="button" class="accordion-header" onclick="toggleAccordion(this)">
+                            <span><i class="fas fa-lightbulb"></i> ${escaparHTML(bloco.titulo)}</span>
+                            <span class="accordion-arrow">▶</span>
+                        </button>
+                        <div class="accordion-content">${quebrarLinhas(bloco.conteudo || 'Sem conteúdo.')}</div>
+                    </div>
+                `;
+            });
+
+            html += '</div>';
+            return html;
+        }
+
+        // NOVA FUNÇÃO: Formatar instruções em accordion separado
+        function formatarInstrucoesComAccordion(texto) {
+            if (!texto || texto.trim() === '') {
+                return '<div class="topicos-formatados">Sem instruções disponíveis.</div>';
+            }
+
+            // Separar instruções do candidato e do ator
+            const partes = texto.split('*INSTRUÇÕES DO ATOR*');
+            let instrucoesCandidato = '';
+            let instrucoesAtor = '';
+
+            if (partes.length > 1) {
+                // Tem as duas partes
+                const primeiraParte = partes[0].replace('*INSTRUÇÕES DO CANDIDATO*', '').trim();
+                instrucoesCandidato = primeiraParte;
+                instrucoesAtor = partes[1].trim();
+            } else {
+                // Pode ter apenas uma parte ou formato diferente
+                instrucoesCandidato = texto.replace('*INSTRUÇÕES DO CANDIDATO*', '').trim();
+            }
+
+            let html = '<div class="topicos-formatados instrucoes-accordion">';
+
+            // Bloco do Candidato
+            if (instrucoesCandidato) {
+                html += `
+                    <div class="accordion-box open">
+                        <button type="button" class="accordion-header" onclick="toggleAccordion(this)">
+                            <span><i class="fas fa-user-md"></i> INSTRUÇÕES DO CANDIDATO</span>
+                            <span class="accordion-arrow">▶</span>
+                        </button>
+                        <div class="accordion-content">${quebrarLinhas(instrucoesCandidato)}</div>
+                    </div>
+                `;
+            }
+
+            // Bloco do Ator
+            if (instrucoesAtor) {
+                html += `
+                    <div class="accordion-box">
+                        <button type="button" class="accordion-header" onclick="toggleAccordion(this)">
+                            <span><i class="fas fa-user"></i> INSTRUÇÕES DO ATOR</span>
+                            <span class="accordion-arrow">▶</span>
+                        </button>
+                        <div class="accordion-content">${quebrarLinhas(instrucoesAtor)}</div>
+                    </div>
+                `;
+            }
+
+            html += '</div>';
+            return html;
         }
 
         function formatarTextoComTopicos(texto) {
@@ -1487,7 +1668,7 @@ Estabelecer conduta inicial"></textarea>
                                     indicacoes: "*INSTRUÇÕES DO CANDIDATO*\nVocê está no ambulatório. Paciente feminina, 32 anos, queixa-se de dor abdominal há 3 dias.\n\n*INSTRUÇÕES DO ATOR*\nVocê é a paciente. Dor em andar superior do abdome, tipo queimação, pós-prandial.",
                                     impressos: "*HIPÓTESE DIAGNÓSTICA*\nDoença do refluxo gastroesofágico\n\n*EXAMES SOLICITADOS*\nEndoscopia digestiva alta",
                                     checklist: "1. ACOLHIMENTO INICIAL\n(1) Apresenta-se à paciente.\n(2) Cumprimenta a paciente.\n(3) Pergunta o nome e a idade da paciente.\nAdequado: Realiza os 3 itens.\nParcialmente adequado: Realiza 2 itens.\nInadequado: Realiza 1 ou nenhum item.\n\n2. CARACTERIZAÇÃO DA DOR ABDOMINAL\nInvestiga ao menos 4 dos seguintes aspectos.\n(1) Início\n(2) Localização\n(3) Irradiação\n(4) Intensidade\n(5) Fatores de melhora ou piora\nAdequado: Investiga 4 ou 5 aspectos.\nParcialmente adequado: Investiga 2 ou 3 aspectos.\nInadequado: Investiga 0 ou 1 aspecto.",
-                                    resumo: "*PONTOS-CHAVE*\nCaracterizar bem a dor\nInvestigar sintomas de alarme\nConsiderar hipóteses diferenciais"
+                                    resumo: "*PONTOS-CHAVE*\nCaracterizar bem a dor\nInvestigar sintomas de alarme\nConsiderar hipóteses diferenciais\n\n*ALGORITMO DE CONDUTA*\n1. Anamnese detalhada\n2. Exame físico completo\n3. Solicitar exames\n4. Definir tratamento"
                                 },
                                 imagem: null
                             }
@@ -1818,7 +1999,8 @@ Estabelecer conduta inicial"></textarea>
             if (pagina === 'geral') {
                 conteudo = criarCabecalhoGeral(station) + formatarTextoComTopicos(station.content?.geral || '');
             } else if (pagina === 'indicacoes') {
-                conteudo = formatarTextoComTopicos(station.content?.indicacoes || '');
+                // Usar a nova função de formatação com accordion para instruções
+                conteudo = formatarInstrucoesComAccordion(station.content?.indicacoes || '');
             } else if (pagina === 'impressos') {
                 conteudo = formatarImpressosColapsaveis(station.content?.impressos || '');
                 if (station.imagem) {
@@ -1827,7 +2009,8 @@ Estabelecer conduta inicial"></textarea>
             } else if (pagina === 'checklist') {
                 conteudo = formatarChecklistComoTabela(station.content?.checklist || '');
             } else if (pagina === 'resumo') {
-                conteudo = formatarTextoComTopicos(station.content?.resumo || '');
+                // Usar a nova função de formatação com accordion para resumo
+                conteudo = formatarResumoComAccordion(station.content?.resumo || '');
             }
 
             conteudo += `
