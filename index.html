@@ -901,6 +901,22 @@
             background: #e6f2e6;
         }
 
+        /* Estilo para texto destacado com asterisco */
+        .texto-destacado {
+            font-weight: 800;
+            text-transform: uppercase;
+            color: #d53f8c;
+            background: linear-gradient(135deg, #fed7e2 0%, #fbb6ce 100%);
+            padding: 2px 8px;
+            border-radius: 12px;
+            display: inline-block;
+            font-size: 0.9em;
+            letter-spacing: 0.5px;
+            box-shadow: 0 2px 4px rgba(213, 63, 140, 0.2);
+            border: 1px solid #f687b3;
+            margin: 0 2px;
+        }
+
         .descricao-adequado {
             background: #eefbf3;
         }
@@ -1032,19 +1048,21 @@
             </div>
 
             <div class="form-group">
-                <label>📋 CONTEÚDO GERAL (Use *texto* para criar tópicos):</label>
+                <label>📋 CONTEÚDO GERAL (Use *texto* para criar tópicos e *palavra* para destacar):</label>
                 <textarea id="novoGeral" placeholder="*ANAMNESE*
 História da doença atual...
+*ATENÇÃO*: Verificar sinais de alarme!
 
 *EXAME FÍSICO*
 Sinais vitais, inspeção..."></textarea>
-                <small style="color: #718096;">Use *texto* para criar tópicos em CAIXA ALTA E NEGRITO</small>
+                <small style="color: #718096;">Use *texto* para criar tópicos e *palavra* para destacar em CAIXA ALTA E NEGRITO</small>
             </div>
 
             <div class="form-group">
                 <label>🖨️ IMPRESSOS (cada *TÍTULO* vira bloco com seta):</label>
                 <textarea id="novoImpressao" placeholder="*HIPÓTESE DIAGNÓSTICA*
 Colecistite aguda
+*URGÊNCIA*: Solicitar cirurgia imediata!
 
 *EXAMES*
 Hemograma
@@ -1081,9 +1099,10 @@ Inadequado: Investiga 0 ou 1 aspecto."></textarea>
             </div>
 
             <div class="form-group">
-                <label>📝 RESUMO (Use *texto* para tópicos que serão transformados em blocos expansíveis):</label>
+                <label>📝 RESUMO (Use *texto* para tópicos que serão transformados em blocos expansíveis e *palavra* para destacar):</label>
                 <textarea id="novoResumo" placeholder="*PONTOS-CHAVE*
 Investigar sinais de gravidade
+*URGÊNCIA*: Se febre alta, internar!
 Definir hipótese principal
 Estabelecer conduta inicial
 
@@ -1091,7 +1110,7 @@ Estabelecer conduta inicial
 Passo 1: Anamnese detalhada
 Passo 2: Exame físico
 Passo 3: Exames complementares"></textarea>
-                <small style="color: #718096;">Cada *TÓPICO* vira um bloco expansível com seta</small>
+                <small style="color: #718096;">Cada *TÓPICO* vira um bloco expansível. Qualquer *palavra* fica destacada em negrito e CAIXA ALTA</small>
             </div>
 
             <div class="modal-actions">
@@ -1154,11 +1173,29 @@ Passo 3: Exames complementares"></textarea>
                 .replace(/'/g, '&#39;');
         }
 
-        function quebrarLinhas(str) {
-            return escaparHTML(str).replace(/\n/g, '<br>');
+        // NOVA FUNÇÃO: Processa o texto para destacar palavras entre asteriscos
+        function processarDestaques(texto) {
+            if (!texto) return '';
+            
+            // Primeiro escapa o HTML para segurança
+            let textoEscapado = escaparHTML(texto);
+            
+            // Substitui *palavra* por span com classe de destaque
+            // Regex: encontra * (palavra) * com qualquer texto no meio (não greedy)
+            textoEscapado = textoEscapado.replace(/\*([^*]+)\*/g, function(match, conteudo) {
+                // Conteúdo já está escapado
+                return '<span class="texto-destacado">' + conteudo.toUpperCase() + '</span>';
+            });
+            
+            return textoEscapado;
         }
 
-        // NOVA FUNÇÃO: Formatar texto com tópicos em accordion (para resumo)
+        function quebrarLinhas(str) {
+            if (!str) return '';
+            return processarDestaques(str).replace(/\n/g, '<br>');
+        }
+
+        // NOVA FUNÇÃO: Formatar texto com tópicos em accordion (para resumo) com suporte a destaques
         function formatarResumoComAccordion(texto) {
             if (!texto || texto.trim() === '') {
                 return '<div class="topicos-formatados">Sem resumo disponível.</div>';
@@ -1200,7 +1237,7 @@ Passo 3: Exames complementares"></textarea>
             let html = '<div class="topicos-formatados resumo-accordion">';
 
             if (textoLivre.length > 0) {
-                html += `<div class="conteudo-topico" style="margin-left:0;">${textoLivre.map(l => escaparHTML(l)).join('<br>')}</div>`;
+                html += `<div class="conteudo-topico" style="margin-left:0;">${textoLivre.map(l => processarDestaques(l)).join('<br>')}</div>`;
             }
 
             blocos.forEach((bloco, index) => {
@@ -1219,7 +1256,7 @@ Passo 3: Exames complementares"></textarea>
             return html;
         }
 
-        // NOVA FUNÇÃO: Formatar instruções em accordion separado
+        // NOVA FUNÇÃO: Formatar instruções em accordion separado com suporte a destaques
         function formatarInstrucoesComAccordion(texto) {
             if (!texto || texto.trim() === '') {
                 return '<div class="topicos-formatados">Sem instruções disponíveis.</div>';
@@ -1272,6 +1309,7 @@ Passo 3: Exames complementares"></textarea>
             return html;
         }
 
+        // Função modificada para formatar texto com tópicos e suporte a destaques
         function formatarTextoComTopicos(texto) {
             if (!texto || texto.trim() === '') {
                 return '<div class="topicos-formatados">Sem conteúdo.</div>';
@@ -1286,7 +1324,7 @@ Passo 3: Exames complementares"></textarea>
             function finalizarTopico() {
                 if (currentTopico) {
                     html += `<div class="topico">${escaparHTML(currentTopico)}</div>`;
-                    html += `<div class="conteudo-topico">${currentConteudo.map(l => escaparHTML(l)).join('<br>')}</div>`;
+                    html += `<div class="conteudo-topico">${currentConteudo.map(l => processarDestaques(l)).join('<br>')}</div>`;
                 }
             }
 
@@ -1311,7 +1349,7 @@ Passo 3: Exames complementares"></textarea>
 
             if (textoLivre.length > 0) {
                 html = '<div class="topicos-formatados"><div class="conteudo-topico" style="margin-left:0;">' +
-                    textoLivre.map(l => escaparHTML(l)).join('<br>') +
+                    textoLivre.map(l => processarDestaques(l)).join('<br>') +
                     '</div>' + html.replace('<div class="topicos-formatados">', '');
             }
 
@@ -1319,6 +1357,7 @@ Passo 3: Exames complementares"></textarea>
             return html;
         }
 
+        // Função modificada para formatar impressos com suporte a destaques
         function formatarImpressosColapsaveis(texto) {
             if (!texto || texto.trim() === '') {
                 return '<div class="topicos-formatados">Sem impressos disponíveis.</div>';
@@ -1360,7 +1399,7 @@ Passo 3: Exames complementares"></textarea>
             let html = '<div class="topicos-formatados">';
 
             if (textoLivre.length > 0) {
-                html += `<div class="conteudo-topico" style="margin-left:0;">${textoLivre.map(l => escaparHTML(l)).join('<br>')}</div>`;
+                html += `<div class="conteudo-topico" style="margin-left:0;">${textoLivre.map(l => processarDestaques(l)).join('<br>')}</div>`;
             }
 
             blocos.forEach((bloco, index) => {
@@ -1422,27 +1461,27 @@ Passo 3: Exames complementares"></textarea>
                 }
                 else if (/^\(\d+\)\s+/.test(linha)) {
                     if (itemAtual) {
-                        itemAtual.subitens.push(linha);
+                        itemAtual.subitens.push(processarDestaques(linha));
                     }
                 }
                 else if (/^Adequado:/i.test(linha)) {
                     if (itemAtual) {
-                        itemAtual.adequadoTexto = linha;
+                        itemAtual.adequadoTexto = processarDestaques(linha);
                     }
                 }
                 else if (/^Parcialmente adequado:/i.test(linha)) {
                     if (itemAtual) {
-                        itemAtual.parcialTexto = linha;
+                        itemAtual.parcialTexto = processarDestaques(linha);
                     }
                 }
                 else if (/^Inadequado:/i.test(linha)) {
                     if (itemAtual) {
-                        itemAtual.inadequadoTexto = linha;
+                        itemAtual.inadequadoTexto = processarDestaques(linha);
                     }
                 }
                 else {
                     if (itemAtual) {
-                        itemAtual.descricoes.push(linhaOriginal);
+                        itemAtual.descricoes.push(processarDestaques(linhaOriginal));
                     }
                 }
             }
@@ -1483,25 +1522,25 @@ Passo 3: Exames complementares"></textarea>
 
                 if (item.descricoes.length > 0) {
                     html += '<tr>';
-                    html += `<td colspan="5" style="background:#f8fafc;">${item.descricoes.map(t => escaparHTML(t)).join('<br>')}</td>`;
+                    html += `<td colspan="5" style="background:#f8fafc;">${item.descricoes.join('<br>')}</td>`;
                     html += '</tr>';
                 }
 
                 item.subitens.forEach(subitem => {
                     html += '<tr>';
-                    html += `<td class="checklist-subitem">${escaparHTML(subitem)}</td>`;
+                    html += `<td class="checklist-subitem">${subitem}</td>`;
                     html += '<td></td><td></td><td></td><td></td>';
                     html += '</tr>';
                 });
 
                 if (item.adequadoTexto) {
-                    html += `<tr><td colspan="5" class="descricao-adequado"><strong>Adequado:</strong> ${escaparHTML(item.adequadoTexto.replace(/^Adequado:\s*/i, ''))}</td></tr>`;
+                    html += `<tr><td colspan="5" class="descricao-adequado"><strong>Adequado:</strong> ${item.adequadoTexto.replace(/^Adequado:\s*/i, '')}</td></tr>`;
                 }
                 if (item.parcialTexto) {
-                    html += `<tr><td colspan="5" class="descricao-parcial"><strong>Parcialmente adequado:</strong> ${escaparHTML(item.parcialTexto.replace(/^Parcialmente adequado:\s*/i, ''))}</td></tr>`;
+                    html += `<tr><td colspan="5" class="descricao-parcial"><strong>Parcialmente adequado:</strong> ${item.parcialTexto.replace(/^Parcialmente adequado:\s*/i, '')}</td></tr>`;
                 }
                 if (item.inadequadoTexto) {
-                    html += `<tr><td colspan="5" class="descricao-inadequado"><strong>Inadequado:</strong> ${escaparHTML(item.inadequadoTexto.replace(/^Inadequado:\s*/i, ''))}</td></tr>`;
+                    html += `<tr><td colspan="5" class="descricao-inadequado"><strong>Inadequado:</strong> ${item.inadequadoTexto.replace(/^Inadequado:\s*/i, '')}</td></tr>`;
                 }
             });
 
@@ -1664,11 +1703,11 @@ Passo 3: Exames complementares"></textarea>
                                     ator: "Você é a paciente. Dor em andar superior do abdome, tipo queimação, pós-prandial."
                                 },
                                 content: {
-                                    geral: "*HISTÓRIA DA DOENÇA ATUAL*\nPaciente relata dor abdominal iniciada há 3 dias.\n\n*ANTECEDENTES PESSOAIS*\nNega comorbidades. Nega cirurgias prévias.",
+                                    geral: "*HISTÓRIA DA DOENÇA ATUAL*\nPaciente relata dor abdominal iniciada há 3 dias.\n*ATENÇÃO*: Verificar sinais de alarme!\n\n*ANTECEDENTES PESSOAIS*\nNega comorbidades. Nega cirurgias prévias.",
                                     indicacoes: "*INSTRUÇÕES DO CANDIDATO*\nVocê está no ambulatório. Paciente feminina, 32 anos, queixa-se de dor abdominal há 3 dias.\n\n*INSTRUÇÕES DO ATOR*\nVocê é a paciente. Dor em andar superior do abdome, tipo queimação, pós-prandial.",
-                                    impressos: "*HIPÓTESE DIAGNÓSTICA*\nDoença do refluxo gastroesofágico\n\n*EXAMES SOLICITADOS*\nEndoscopia digestiva alta",
+                                    impressos: "*HIPÓTESE DIAGNÓSTICA*\nDoença do refluxo gastroesofágico\n*URGÊNCIA*: Se sinais de alarme, encaminhar!\n\n*EXAMES SOLICITADOS*\nEndoscopia digestiva alta",
                                     checklist: "1. ACOLHIMENTO INICIAL\n(1) Apresenta-se à paciente.\n(2) Cumprimenta a paciente.\n(3) Pergunta o nome e a idade da paciente.\nAdequado: Realiza os 3 itens.\nParcialmente adequado: Realiza 2 itens.\nInadequado: Realiza 1 ou nenhum item.\n\n2. CARACTERIZAÇÃO DA DOR ABDOMINAL\nInvestiga ao menos 4 dos seguintes aspectos.\n(1) Início\n(2) Localização\n(3) Irradiação\n(4) Intensidade\n(5) Fatores de melhora ou piora\nAdequado: Investiga 4 ou 5 aspectos.\nParcialmente adequado: Investiga 2 ou 3 aspectos.\nInadequado: Investiga 0 ou 1 aspecto.",
-                                    resumo: "*PONTOS-CHAVE*\nCaracterizar bem a dor\nInvestigar sintomas de alarme\nConsiderar hipóteses diferenciais\n\n*ALGORITMO DE CONDUTA*\n1. Anamnese detalhada\n2. Exame físico completo\n3. Solicitar exames\n4. Definir tratamento"
+                                    resumo: "*PONTOS-CHAVE*\nCaracterizar bem a dor\n*URGÊNCIA*: Investigar sinais de alarme!\nConsiderar hipóteses diferenciais\n\n*ALGORITMO DE CONDUTA*\n1. Anamnese detalhada\n2. Exame físico completo\n3. Solicitar exames\n4. Definir tratamento"
                                 },
                                 imagem: null
                             }
