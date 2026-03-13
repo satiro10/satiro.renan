@@ -10,6 +10,7 @@
     <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
     
     <style>
+        /* Seu CSS existente permanece o mesmo */
         * {
             margin: 0;
             padding: 0;
@@ -2010,185 +2011,265 @@ Passo 3: Exames complementares"></textarea>
             alert('✅ Estação criada com sucesso!');
         }
 
-// ========== FUNÇÕES DOS FLASHCARDS (VERSÃO DEFINITIVA) ==========
-function startFlashcard(stationId) {
-    console.log("Iniciando flashcard com ID:", stationId);
-    
-    // PASSO 1: Pega TODAS as estações do filtro atual
-    // filteredStations já contém as estações filtradas por especialidade e busca
-    flashcardDeck = [...filteredStations];
-    
-    // Se não houver estações filtradas, usa todas as estações
-    if (flashcardDeck.length === 0) {
-        flashcardDeck = [...stationsData];
-    }
-    
-    console.log("Total de estações no deck:", flashcardDeck.length);
-    
-    // PASSO 2: Encontra o índice da estação clicada no deck
-    if (stationId) {
-        const indexEncontrado = flashcardDeck.findIndex(s => s.id === stationId);
-        
-        if (indexEncontrado !== -1) {
-            // Estação encontrada no deck - começa por ela
-            currentFlashcardIndex = indexEncontrado;
-            console.log("Estação encontrada no índice:", indexEncontrado, flashcardDeck[indexEncontrado].title);
-        } else {
-            // Estação não está no deck atual (pode ser de outra especialidade)
-            // Vamos buscar a estação completa e adicionar no início
-            const estacaoCompleta = stationsData.find(s => s.id === stationId);
-            if (estacaoCompleta) {
-                // Adiciona a estação no início do deck
-                flashcardDeck = [estacaoCompleta, ...flashcardDeck];
-                currentFlashcardIndex = 0;
-                console.log("Estação adicionada ao início:", estacaoCompleta.title);
+        // ========== FUNÇÕES DOS FLASHCARDS (VERSÃO CORRIGIDA) ==========
+        function startFlashcard(stationId) {
+            console.log("Iniciando flashcard com ID:", stationId);
+            
+            // PASSO 1: Pega TODAS as estações do filtro atual
+            flashcardDeck = [...filteredStations];
+            
+            // Se não houver estações filtradas, usa todas as estações
+            if (flashcardDeck.length === 0) {
+                flashcardDeck = [...stationsData];
+            }
+            
+            console.log("Total de estações no deck:", flashcardDeck.length);
+            
+            // PASSO 2: Encontra o índice da estação clicada no deck
+            if (stationId) {
+                const indexEncontrado = flashcardDeck.findIndex(s => s.id === stationId);
+                
+                if (indexEncontrado !== -1) {
+                    // Estação encontrada no deck - começa por ela
+                    currentFlashcardIndex = indexEncontrado;
+                    console.log("Estação encontrada no índice:", indexEncontrado, flashcardDeck[indexEncontrado].title);
+                } else {
+                    // Estação não está no deck atual - busca e adiciona no início
+                    const estacaoCompleta = stationsData.find(s => s.id === stationId);
+                    if (estacaoCompleta) {
+                        flashcardDeck = [estacaoCompleta, ...flashcardDeck];
+                        currentFlashcardIndex = 0;
+                        console.log("Estação adicionada ao início:", estacaoCompleta.title);
+                    } else {
+                        alert('Estação não encontrada no sistema.');
+                        return;
+                    }
+                }
             } else {
-                alert('Estação não encontrada no sistema.');
+                currentFlashcardIndex = 0;
+            }
+
+            if (flashcardDeck.length === 0) {
+                alert('Nenhuma estação disponível para estudo.');
                 return;
             }
+
+            currentFlashcardPage = 'geral';
+            
+            console.log("Deck finalizado com", flashcardDeck.length, "estações");
+            console.log("Índice atual:", currentFlashcardIndex);
+            console.log("Estação atual:", flashcardDeck[currentFlashcardIndex].title);
+            
+            // Atualiza o título
+            const titleElement = document.getElementById('flashcardTitle');
+            if (titleElement) {
+                titleElement.textContent = flashcardDeck[currentFlashcardIndex].title;
+            }
+            
+            // Mostra o flashcard
+            showFlashcard();
+            document.getElementById('flashcardMode').classList.add('active');
         }
-    } else {
-        // Se não veio ID (modo estudo geral), começa do início
-        currentFlashcardIndex = 0;
-    }
 
-    // PASSO 3: Verifica se o deck não está vazio
-    if (flashcardDeck.length === 0) {
-        alert('Nenhuma estação disponível para estudo.');
-        return;
-    }
+        function showFlashcard() {
+            if (flashcardDeck.length === 0) {
+                closeFlashcards();
+                return;
+            }
 
-    // PASSO 4: Reseta para a primeira página e mostra
-    currentFlashcardPage = 'geral';
-    
-    console.log("Deck finalizado com", flashcardDeck.length, "estações");
-    console.log("Índice atual:", currentFlashcardIndex);
-    console.log("Estação atual:", flashcardDeck[currentFlashcardIndex].title);
-    console.log("Primeira estação do deck:", flashcardDeck[0].title);
-    console.log("Última estação do deck:", flashcardDeck[flashcardDeck.length-1].title);
-    
-    // Atualiza o título
-    const titleElement = document.getElementById('flashcardTitle');
-    if (titleElement) {
-        titleElement.textContent = flashcardDeck[currentFlashcardIndex].title;
-    }
-    
-    // Mostra o flashcard
-    showFlashcard();
-    document.getElementById('flashcardMode').classList.add('active');
-}
+            // Garante que o índice está dentro dos limites
+            if (currentFlashcardIndex >= flashcardDeck.length) {
+                currentFlashcardIndex = 0;
+            }
+            if (currentFlashcardIndex < 0) {
+                currentFlashcardIndex = flashcardDeck.length - 1;
+            }
 
-function nextCard() {
-    if (flashcardDeck.length === 0) {
-        console.log("Deck vazio!");
-        return;
-    }
-    
-    console.log("Antes do next - Índice:", currentFlashcardIndex, "de", flashcardDeck.length-1);
-    
-    if (currentFlashcardIndex < flashcardDeck.length - 1) {
-        currentFlashcardIndex++;
-        console.log("Avançou para:", currentFlashcardIndex);
-    } else {
-        currentFlashcardIndex = 0;
-        console.log("Chegou ao fim, voltou para o início:", currentFlashcardIndex);
-    }
-    
-    showFlashcard();
-}
+            const station = flashcardDeck[currentFlashcardIndex];
+            
+            console.log("Mostrando flashcard - Índice:", currentFlashcardIndex, "Estação:", station.title);
+            
+            // Atualiza título
+            const titleElement = document.getElementById('flashcardTitle');
+            if (titleElement) {
+                titleElement.textContent = station.title;
+            }
+            
+            // Atualiza contador
+            const counterElement = document.getElementById('flashcardCounter');
+            if (counterElement) {
+                counterElement.textContent = `${currentFlashcardIndex + 1} / ${flashcardDeck.length}`;
+            }
+            
+            // Atualiza barra de progresso
+            const progressElement = document.getElementById('flashcardProgress');
+            if (progressElement) {
+                const progresso = ((currentFlashcardIndex + 1) / flashcardDeck.length) * 100;
+                progressElement.style.width = progresso + '%';
+            }
 
-function prevCard() {
-    if (flashcardDeck.length === 0) {
-        console.log("Deck vazio!");
-        return;
-    }
-    
-    console.log("Antes do prev - Índice:", currentFlashcardIndex, "de", flashcardDeck.length-1);
-    
-    if (currentFlashcardIndex > 0) {
-        currentFlashcardIndex--;
-        console.log("Voltou para:", currentFlashcardIndex);
-    } else {
-        currentFlashcardIndex = flashcardDeck.length - 1;
-        console.log("Estava no início, foi para o fim:", currentFlashcardIndex);
-    }
-    
-    showFlashcard();
-}
+            // Ativa a aba atual
+            ativarAbaAtual();
+            
+            // Mostra o conteúdo da página
+            mostrarPaginaFlashcard(currentFlashcardPage);
+        }
 
-function shuffleCards() {
-    if (flashcardDeck.length === 0) return;
-    
-    console.log("Embaralhando deck de", flashcardDeck.length, "estações");
-    console.log("Antes do embaralho - Índice:", currentFlashcardIndex, "Estação:", flashcardDeck[currentFlashcardIndex].title);
-    
-    // Guarda a estação atual
-    const estacaoAtual = flashcardDeck[currentFlashcardIndex];
-    
-    // Embaralha o deck
-    for (let i = flashcardDeck.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [flashcardDeck[i], flashcardDeck[j]] = [flashcardDeck[j], flashcardDeck[i]];
-    }
-    
-    // Tenta encontrar a mesma estação
-    const novoIndex = flashcardDeck.findIndex(s => s.id === estacaoAtual.id);
-    if (novoIndex !== -1) {
-        currentFlashcardIndex = novoIndex;
-        console.log("Manteve a mesma estação no índice:", novoIndex);
-    } else {
-        currentFlashcardIndex = 0;
-        console.log("Estação não encontrada, foi para o índice 0");
-    }
-    
-    console.log("Depois do embaralho - Índice:", currentFlashcardIndex, "Estação:", flashcardDeck[currentFlashcardIndex].title);
-    
-    showFlashcard();
-}
+        function ativarAbaAtual() {
+            const paginas = ['geral', 'indicacoes', 'impressos', 'checklist', 'resumo'];
+            const tabs = document.querySelectorAll('.page-tab');
+            tabs.forEach((tab, index) => {
+                tab.classList.remove('active');
+                if (paginas[index] === currentFlashcardPage) {
+                    tab.classList.add('active');
+                }
+            });
+        }
 
-function showFlashcard() {
-    if (flashcardDeck.length === 0) {
-        closeFlashcards();
-        return;
-    }
+        function mostrarPaginaFlashcard(pagina) {
+            if (flashcardDeck.length === 0) return;
 
-    // Garante que o índice está dentro dos limites
-    if (currentFlashcardIndex >= flashcardDeck.length) {
-        currentFlashcardIndex = 0;
-    }
-    if (currentFlashcardIndex < 0) {
-        currentFlashcardIndex = flashcardDeck.length - 1;
-    }
+            const station = flashcardDeck[currentFlashcardIndex];
+            if (!station) return;
 
-    const station = flashcardDeck[currentFlashcardIndex];
-    
-    console.log("Mostrando flashcard - Índice:", currentFlashcardIndex, "Estação:", station.title);
-    
-    // Atualiza título
-    const titleElement = document.getElementById('flashcardTitle');
-    if (titleElement) {
-        titleElement.textContent = station.title;
-    }
-    
-    // Atualiza contador
-    const counterElement = document.getElementById('flashcardCounter');
-    if (counterElement) {
-        counterElement.textContent = `${currentFlashcardIndex + 1} / ${flashcardDeck.length}`;
-    }
-    
-    // Atualiza barra de progresso
-    const progressElement = document.getElementById('flashcardProgress');
-    if (progressElement) {
-        const progresso = ((currentFlashcardIndex + 1) / flashcardDeck.length) * 100;
-        progressElement.style.width = progresso + '%';
-    }
+            let conteudo = '';
 
-    // Ativa a aba atual
-    ativarAbaAtual();
-    
-    // Mostra o conteúdo da página
-    mostrarPaginaFlashcard(currentFlashcardPage);
-}
+            if (pagina === 'geral') {
+                conteudo = criarCabecalhoGeral(station) + formatarTextoComTopicos(station.content?.geral || '');
+            } else if (pagina === 'indicacoes') {
+                conteudo = formatarInstrucoesComAccordion(station.content?.indicacoes || '');
+            } else if (pagina === 'impressos') {
+                conteudo = formatarImpressosColapsaveis(station.content?.impressos || '');
+                if (station.imagem) {
+                    conteudo += `<div style="margin-top:20px; text-align:center;"><img src="${station.imagem}" class="image-preview" style="max-width:100%; max-height:300px;" alt="Imagem da estação"></div>`;
+                }
+            } else if (pagina === 'checklist') {
+                conteudo = formatarChecklistComoTabela(station.content?.checklist || '');
+            } else if (pagina === 'resumo') {
+                conteudo = formatarResumoComAccordion(station.content?.resumo || '');
+            }
+
+            conteudo += `
+                <div style="margin-top:30px; text-align:center; padding-top:20px; border-top:1px solid #e2e8f0;">
+                    <button class="btn btn-study" onclick="markAsStudied(${station.id})">
+                        ${station.studied ? '✅ Já estudada' : '📖 Marcar como estudada'}
+                    </button>
+                </div>
+            `;
+
+            document.getElementById('flashcardPageContent').innerHTML = conteudo;
+
+            if (pagina === 'checklist') {
+                calcularPontuacaoTotal();
+            }
+        }
+
+        function mudarPaginaFlashcard(pagina, el) {
+            currentFlashcardPage = pagina;
+            ativarAbaAtual();
+            mostrarPaginaFlashcard(pagina);
+        }
+
+        function nextCard() {
+            if (flashcardDeck.length === 0) {
+                console.log("Deck vazio!");
+                return;
+            }
+            
+            console.log("Antes do next - Índice:", currentFlashcardIndex, "de", flashcardDeck.length-1);
+            
+            if (currentFlashcardIndex < flashcardDeck.length - 1) {
+                currentFlashcardIndex++;
+                console.log("Avançou para:", currentFlashcardIndex);
+            } else {
+                currentFlashcardIndex = 0;
+                console.log("Chegou ao fim, voltou para o início:", currentFlashcardIndex);
+            }
+            
+            showFlashcard();
+        }
+
+        function prevCard() {
+            if (flashcardDeck.length === 0) {
+                console.log("Deck vazio!");
+                return;
+            }
+            
+            console.log("Antes do prev - Índice:", currentFlashcardIndex, "de", flashcardDeck.length-1);
+            
+            if (currentFlashcardIndex > 0) {
+                currentFlashcardIndex--;
+                console.log("Voltou para:", currentFlashcardIndex);
+            } else {
+                currentFlashcardIndex = flashcardDeck.length - 1;
+                console.log("Estava no início, foi para o fim:", currentFlashcardIndex);
+            }
+            
+            showFlashcard();
+        }
+
+        function shuffleCards() {
+            if (flashcardDeck.length === 0) return;
+            
+            console.log("Embaralhando deck de", flashcardDeck.length, "estações");
+            console.log("Antes do embaralho - Índice:", currentFlashcardIndex, "Estação:", flashcardDeck[currentFlashcardIndex].title);
+            
+            // Guarda a estação atual
+            const estacaoAtual = flashcardDeck[currentFlashcardIndex];
+            
+            // Embaralha o deck
+            for (let i = flashcardDeck.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [flashcardDeck[i], flashcardDeck[j]] = [flashcardDeck[j], flashcardDeck[i]];
+            }
+            
+            // Tenta encontrar a mesma estação
+            const novoIndex = flashcardDeck.findIndex(s => s.id === estacaoAtual.id);
+            if (novoIndex !== -1) {
+                currentFlashcardIndex = novoIndex;
+                console.log("Manteve a mesma estação no índice:", novoIndex);
+            } else {
+                currentFlashcardIndex = 0;
+                console.log("Estação não encontrada, foi para o índice 0");
+            }
+            
+            console.log("Depois do embaralho - Índice:", currentFlashcardIndex, "Estação:", flashcardDeck[currentFlashcardIndex].title);
+            
+            showFlashcard();
+        }
+
+        function closeFlashcards() {
+            document.getElementById('flashcardMode').classList.remove('active');
+        }
+
+        // ========== EVENT LISTENERS ==========
+        document.getElementById('searchInput').addEventListener('input', function() {
+            renderStations();
+        });
+
+        document.addEventListener('keydown', function(e) {
+            if (document.getElementById('flashcardMode').classList.contains('active')) {
+                // Previne comportamento padrão apenas para as teclas que usamos
+                if (e.key === 'ArrowRight' || e.key === 'ArrowLeft' || e.key === 'Escape' || 
+                    (e.key >= '1' && e.key <= '5') || e.key === 'h' || e.key === 'H' || 
+                    e.key === 'e' || e.key === 'E') {
+                    e.preventDefault();
+                }
+                
+                if (e.key === 'ArrowRight') {
+                    nextCard();
+                } else if (e.key === 'ArrowLeft') {
+                    prevCard();
+                } else if (e.key === 'Escape') {
+                    closeFlashcards();
+                } else if (e.key >= '1' && e.key <= '5') {
+                    const pages = ['geral', 'indicacoes', 'impressos', 'checklist', 'resumo'];
+                    const pageIndex = parseInt(e.key) - 1;
+                    if (pageIndex >= 0 && pageIndex < pages.length) {
+                        currentFlashcardPage = pages[pageIndex];
+                        ativarAbaAtual();
+                        mostrarPaginaFlashcard(currentFlashcardPage);
+                    }
                 } else if (e.key === 'h' || e.key === 'H') {
                     currentFlashcardIndex = 0;
                     showFlashcard();
@@ -2199,9 +2280,8 @@ function showFlashcard() {
             }
         });
 
-        // Inicializar
+        // ========== INICIALIZAÇÃO ==========
         carregarDados();
     </script>
 </body>
 </html>
-
